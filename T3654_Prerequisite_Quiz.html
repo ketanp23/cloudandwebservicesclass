@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>T3654 — Pre-requisite Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A202C;
+    --ink-soft: #2D3748;
+    --muted: #4A5568;
+    --muted-soft: #718096;
+    --paper: #FAF8F3;
+    --paper-warm: #F5F1E8;
+    --card: #FFFFFF;
+    --border: #E5E0D5;
+    --border-strong: #C9C2B0;
+    --navy: #1A365D;
+    --navy-soft: #2C5282;
+    --gold: #B7791F;
+    --gold-soft: #D69E2E;
+    --success: #2F855A;
+    --success-bg: #F0FFF4;
+    --error: #C53030;
+    --error-bg: #FFF5F5;
+    --radius: 6px;
+    --shadow: 0 1px 3px rgba(26, 54, 93, 0.06), 0 1px 2px rgba(26, 54, 93, 0.04);
+    --shadow-lg: 0 10px 30px -10px rgba(26, 54, 93, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ========== TOP STICKY BAR ========== */
+  .topbar {
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 12px 0;
+    backdrop-filter: blur(8px);
+    background: rgba(250, 248, 243, 0.92);
+  }
+  .topbar-inner {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+  }
+  .course-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .course-tag b { color: var(--navy); font-weight: 700; }
+  .timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    text-align: center;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-label {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--muted-soft);
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+  }
+  .timer.warning { color: var(--gold); }
+  .timer.danger { color: var(--error); animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.6; } }
+  .progress-info {
+    text-align: right;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .progress-info b { color: var(--ink); font-weight: 700; }
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    margin-top: 10px;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--navy);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* ========== MAIN LAYOUT ========== */
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ========== COVER PAGE ========== */
+  .cover {
+    text-align: center;
+    padding: 24px 0 40px;
+  }
+  .cover-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cover-eyebrow::before, .cover-eyebrow::after {
+    content: '—';
+    margin: 0 12px;
+    color: var(--border-strong);
+  }
+  .cover-uni {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+    margin-bottom: 4px;
+  }
+  .cover-faculty {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 48px;
+  }
+  .cover-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 44px;
+    line-height: 1.1;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .cover-title em { font-style: italic; font-weight: 400; }
+  .cover-subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 48px;
+  }
+  .cover-subtitle b { color: var(--ink); font-weight: 600; }
+
+  /* Quick stats strip */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 48px;
+  }
+  .stat {
+    background: var(--card);
+    padding: 18px 12px;
+    text-align: center;
+  }
+  .stat-value {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  @media (max-width: 520px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .cover-title { font-size: 32px; }
+  }
+
+  /* Instructions */
+  .instructions {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--navy);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 36px;
+  }
+  .instructions h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 14px;
+    letter-spacing: 0.02em;
+  }
+  .instructions ul {
+    list-style: none;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .instructions li {
+    padding: 6px 0 6px 28px;
+    position: relative;
+  }
+  .instructions li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 16px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  /* Candidate details form */
+  .details-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+  }
+  .details-card h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .details-card p.note {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .form-grid .full { grid-column: span 2; }
+  @media (max-width: 520px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .full { grid-column: span 1; }
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--paper);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    border-radius: 4px;
+    transition: border 0.15s, box-shadow 0.15s;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s;
+    text-decoration: none;
+  }
+  .btn:hover { background: #143052; }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled {
+    background: var(--border-strong);
+    cursor: not-allowed;
+    color: var(--muted);
+  }
+  .btn-large { padding: 16px 36px; font-size: 15px; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-ghost:hover { background: var(--paper-warm); }
+  .btn-danger { background: var(--error); }
+  .btn-danger:hover { background: #9B2C2C; }
+
+  .start-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+  }
+
+  /* ========== QUIZ AREA ========== */
+  #quiz-area { display: none; }
+  #quiz-area.active { display: block; }
+  #cover.hidden { display: none; }
+
+  .section-header {
+    margin: 64px 0 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .section-header:first-of-type { margin-top: 8px; }
+  .section-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .section-meta {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Question cards */
+  .qcard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: border 0.15s, box-shadow 0.15s;
+  }
+  .qcard.answered { border-left: 3px solid var(--success); }
+  .qhead {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .qnum {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    flex-shrink: 0;
+    min-width: 36px;
+  }
+  .qtext {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .qtext code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--paper-warm);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--ink-soft);
+  }
+  .opts { list-style: none; padding-left: 48px; }
+  .opt {
+    margin-bottom: 6px;
+  }
+  .opt label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.12s;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .opt label:hover { background: var(--paper-warm); }
+  .opt input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .opt-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all 0.15s;
+    margin-top: 1px;
+  }
+  .opt input:checked ~ .opt-letter {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: white;
+  }
+  .opt input:checked ~ .opt-text { color: var(--ink); font-weight: 500; }
+  .opt input:focus-visible ~ .opt-letter {
+    box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.2);
+  }
+  .opt-text { flex: 1; }
+  .opt-text code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--paper-warm);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* Submit panel */
+  .submit-panel {
+    margin-top: 64px;
+    padding: 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .submit-panel h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .submit-panel p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .submit-panel .summary {
+    display: inline-flex;
+    gap: 24px;
+    padding: 14px 20px;
+    background: var(--paper);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  .summary-item { color: var(--muted); }
+  .summary-item b { color: var(--ink); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+  /* Confirm modal */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 32, 44, 0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .modal p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  /* ========== RESULTS PAGE ========== */
+  #results-area { display: none; }
+  #results-area.active { display: block; }
+
+  .result-hero {
+    text-align: center;
+    padding: 32px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .result-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .result-score-display {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    font-family: 'Fraunces', Georgia, serif;
+    margin-bottom: 16px;
+  }
+  .result-score {
+    font-size: 96px;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  .result-total {
+    font-size: 36px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .result-band {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+  }
+  .band-strong { background: #C6F6D5; color: #22543D; }
+  .band-adequate { background: #FEFCBF; color: #744210; }
+  .band-weak { background: #FED7D7; color: #822727; }
+  .band-foundational { background: #FEB2B2; color: #63171B; }
+  .result-name {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .result-name b { color: var(--ink); }
+
+  /* Section breakdown */
+  .breakdown {
+    margin-bottom: 48px;
+  }
+  .breakdown h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .breakdown-grid {
+    display: grid;
+    gap: 12px;
+  }
+  .breakdown-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .breakdown-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .breakdown-label span {
+    display: block;
+    font-size: 11px;
+    color: var(--muted-soft);
+    font-weight: 400;
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .breakdown-bar {
+    width: 140px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .breakdown-bar-fill {
+    height: 100%;
+    background: var(--navy);
+    border-radius: 3px;
+  }
+  .breakdown-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 50px;
+    text-align: right;
+  }
+  @media (max-width: 520px) {
+    .breakdown-bar { width: 80px; }
+  }
+
+  /* Review section */
+  .review-section h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .review-intro {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .review-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    background: var(--card);
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .filter-btn:hover { color: var(--navy); border-color: var(--navy); }
+  .filter-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+
+  .review-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--border);
+  }
+  .review-card.correct { border-left-color: var(--success); }
+  .review-card.incorrect { border-left-color: var(--error); }
+  .review-card.unanswered { border-left-color: var(--gold); }
+  .review-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .review-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 40px;
+  }
+  .review-status {
+    margin-left: auto;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .status-correct { background: var(--success-bg); color: var(--success); }
+  .status-incorrect { background: var(--error-bg); color: var(--error); }
+  .status-unanswered { background: #FEFCBF; color: #744210; }
+  .review-q {
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 14px;
+    line-height: 1.55;
+  }
+  .review-q code, .review-ans code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--paper-warm);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .review-answers {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .review-ans {
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--muted);
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .review-ans-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    min-width: 80px;
+    color: var(--muted-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .review-ans.your { background: var(--error-bg); color: var(--ink-soft); }
+  .review-ans.your .review-ans-label { color: var(--error); }
+  .review-ans.your.correct-pick { background: var(--success-bg); }
+  .review-ans.your.correct-pick .review-ans-label { color: var(--success); }
+  .review-ans.right-ans { background: var(--success-bg); color: var(--ink); }
+  .review-ans.right-ans .review-ans-label { color: var(--success); }
+  .review-explanation {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 10px 14px;
+    background: var(--paper-warm);
+    border-radius: 4px;
+    line-height: 1.6;
+  }
+  .review-explanation b { color: var(--ink-soft); font-weight: 600; }
+
+  .results-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 48px 0 24px;
+    flex-wrap: wrap;
+  }
+
+  .instructor-note {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--paper-warm);
+    border-radius: var(--radius);
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .instructor-note b { color: var(--ink); }
+
+  /* Restore notice */
+  .restore-banner {
+    display: none;
+    background: #FFFAEB;
+    border: 1px solid #F6E05E;
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #744210;
+    align-items: center;
+    gap: 12px;
+  }
+  .restore-banner.show { display: flex; }
+  .restore-banner button {
+    background: transparent;
+    border: 1px solid #D69E2E;
+    color: #744210;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .restore-banner button:hover { background: rgba(214, 158, 46, 0.15); }
+
+  /* ========== PRINT STYLES ========== */
+  @media print {
+    .topbar, .results-actions, .review-filters, .restore-banner, .submit-panel { display: none !important; }
+    body { background: white; }
+    .qcard, .review-card, .breakdown-row, .details-card, .instructions { box-shadow: none; border: 1px solid #999; page-break-inside: avoid; }
+    main { padding: 20px; max-width: 100%; }
+    .section-header { page-break-before: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== STICKY TOP BAR ========== -->
+<header class="topbar" id="topbar" style="display:none;">
+  <div class="topbar-inner">
+    <div class="course-tag"><b>T3654</b> · Pre-requisite Quiz</div>
+    <div>
+      <span class="timer-label">Time Remaining</span>
+      <div class="timer" id="timer">120:00</div>
+    </div>
+    <div class="progress-info"><b id="prog-answered">0</b> / 100 answered</div>
+  </div>
+  <div class="progress-bar"><div class="progress-bar-fill" id="prog-bar"></div></div>
+</header>
+
+<main>
+
+  <!-- ========== COVER / WELCOME ========== -->
+  <section id="cover">
+    <div class="cover">
+      <div class="cover-eyebrow">Symbiosis International (Deemed University)</div>
+      <div class="cover-uni" style="display:none;">Symbiosis International (Deemed University)</div>
+      <div class="cover-faculty">Faculty of Computer Studies · Data Science</div>
+
+      <h1 class="cover-title">Pre-requisite<br><em>Quiz</em></h1>
+      <p class="cover-subtitle">
+        A short, untimed reading before you begin: this quiz is designed to help your instructor
+        understand your <b>current knowledge level</b> in operating systems, virtualization and networking
+        before <b>T3654 — Cloud and Web Services</b> commences. Your score will <b>not</b> affect your grade.
+      </p>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-value">100</div><div class="stat-label">Questions</div></div>
+        <div class="stat"><div class="stat-value">120</div><div class="stat-label">Minutes</div></div>
+        <div class="stat"><div class="stat-value">4</div><div class="stat-label">Sections</div></div>
+        <div class="stat"><div class="stat-value">1×</div><div class="stat-label">Mark Each</div></div>
+      </div>
+    </div>
+
+    <div class="restore-banner" id="restore-banner">
+      <span>🕒 We found an unsubmitted attempt saved in your browser. Restore it?</span>
+      <button onclick="restoreSession()">Restore</button>
+      <button onclick="discardSession()" style="border:none; background:none; color:#744210;">Discard</button>
+    </div>
+
+    <div class="instructions">
+      <h3>Before you begin</h3>
+      <ul>
+        <li>Read each question carefully — every question has exactly <b>one</b> correct answer.</li>
+        <li>You have <b>120 minutes</b> from the moment you click <b>Start quiz</b>. The timer is at the top.</li>
+        <li>Your progress is auto-saved in this browser — you may safely close and re-open the tab.</li>
+        <li>No negative marking. Attempt every question, even if uncertain.</li>
+        <li>Calculators, notes, mobile phones and AI assistants are <b>not</b> permitted.</li>
+        <li>You may submit early. The quiz auto-submits when the timer reaches zero.</li>
+      </ul>
+    </div>
+
+    <div class="details-card">
+      <h3>Your details</h3>
+      <p class="note">Please fill these in before starting. They appear on your result summary, which you'll share with the instructor.</p>
+      <div class="form-grid">
+        <div class="field full">
+          <label for="s-name">Full Name</label>
+          <input id="s-name" type="text" placeholder="e.g. Ananya Sharma" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="s-roll">Roll Number</label>
+          <input id="s-roll" type="text" placeholder="e.g. MBA-DS-24-021" />
+        </div>
+        <div class="field">
+          <label for="s-prog">Programme & Batch</label>
+          <input id="s-prog" type="text" placeholder="e.g. MBA (DS) 2024-26" />
+        </div>
+      </div>
+      <div class="start-row" style="margin-top:24px;">
+        <button class="btn btn-large" id="start-btn" onclick="startQuiz()">Start quiz →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz-area"></section>
+
+  <!-- ========== RESULTS ========== -->
+  <section id="results-area"></section>
+
+</main>
+
+<!-- ========== CONFIRMATION MODAL ========== -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal">
+    <h3>Submit your quiz?</h3>
+    <p id="confirm-text">You have answered <b>0</b> of 100 questions. Once submitted, you cannot change your answers. Are you sure?</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Keep working</button>
+      <button class="btn btn-danger" onclick="submitQuiz()">Yes, submit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================================================================
+// QUIZ DATA — 100 questions across 4 sections
+// =================================================================
+const QUIZ = {
+  sections: [
+    {
+      id: 'A',
+      title: 'Operating Systems',
+      subtitle: 'Processes, memory, file systems and Linux fundamentals',
+      questions: [
+        { q: "Which of the following is NOT an operating system?", opts: ["Ubuntu", "Windows Server", "Oracle Database", "macOS"], correct: 2, explanation: "Oracle Database is a database management system (DBMS), not an operating system." },
+        { q: "The primary function of an OS kernel is to:", opts: ["Provide a graphical desktop", "Manage hardware resources and mediate access between hardware and applications", "Run web browsers", "Compile source code"], correct: 1, explanation: "The kernel is the core of the OS — it manages CPU, memory, devices and provides system services to applications." },
+        { q: "What does <b>multitasking</b> in an OS refer to?", opts: ["Supporting multiple simultaneous users", "Executing multiple processes concurrently via rapid context switching", "Requiring multiple CPU cores", "Running multiple monitors"], correct: 1, explanation: "Multitasking means the OS rapidly switches between multiple processes, giving the illusion of concurrent execution — even on a single core." },
+        { q: "In Linux, which command lists files and directories in the current folder?", opts: ["<code>list</code>", "<code>ls</code>", "<code>dir</code>", "<code>files</code>"], correct: 1, explanation: "<code>ls</code> is the standard Linux/Unix command to list directory contents." },
+        { q: "Which of the following is a CPU scheduling algorithm?", opts: ["Round Robin", "SMTP", "DHCP", "SSL/TLS"], correct: 0, explanation: "Round Robin is a classic CPU scheduling algorithm; the others are network protocols." },
+        { q: "What is a <b>process</b> in operating-system terminology?", opts: ["A program stored on disk", "A program in execution, with its own memory and state", "A hardware peripheral", "A user login session"], correct: 1, explanation: "A process is a program in active execution, with its own address space, PID, and OS-tracked state." },
+        { q: "Threads within a single process:", opts: ["Have completely separate memory address spaces", "Share the same memory address space of the parent process", "Cannot run in parallel on multi-core CPUs", "Run only in kernel mode"], correct: 1, explanation: "Threads within a process share memory, making inter-thread communication fast but requiring careful synchronisation." },
+        { q: "Which memory management technique divides physical memory into fixed-size blocks?", opts: ["Paging", "Segmentation", "Compaction", "Fragmentation"], correct: 0, explanation: "Paging divides memory into fixed-size pages/frames. Segmentation uses variable-size logical segments." },
+        { q: "<b>Virtual memory</b> allows the operating system to:", opts: ["Delete files without user action", "Use disk space as an extension of physical RAM", "Access the cloud automatically", "Encrypt all files"], correct: 1, explanation: "Virtual memory lets programs use more memory than physically available by paging inactive data to disk." },
+        { q: "A cloud engineer notices that a Linux server is running out of physical RAM. Which OS mechanism allows the server to keep running by moving inactive memory pages to disk?", opts: ["Firewall", "Swap space (paging to disk)", "SSL/TLS", "DNS"], correct: 1, explanation: "The swap space acts as an overflow area on disk — the OS moves inactive pages there, freeing RAM for active processes. Reasoning-based cloud-ops question." },
+        { q: "What is a <b>deadlock</b> in operating systems?", opts: ["A program crash caused by a null pointer", "A situation where two or more processes wait indefinitely for resources held by each other", "A full disk", "Extremely high CPU load"], correct: 1, explanation: "Classic deadlock: circular waiting for resources with no process able to proceed." },
+        { q: "Which file system is native to most modern Linux distributions?", opts: ["NTFS", "FAT32", "ext4", "HFS+"], correct: 2, explanation: "ext4 is the default on most Linux distros. NTFS is Windows, HFS+ is older macOS." },
+        { q: "In Linux, the command <code>sudo</code> is used to:", opts: ["Shut down the system", "Execute a command with elevated (root) privileges", "Search for files", "Restart networking"], correct: 1, explanation: "<code>sudo</code> = 'substitute user do' — runs a command as another user, typically root." },
+        { q: "The command <code>chmod 755 script.sh</code> in Linux:", opts: ["Renames the file", "Changes the file's access permissions", "Copies the file", "Deletes the file"], correct: 1, explanation: "<code>chmod</code> changes file mode (permissions). 755 = rwxr-xr-x — owner: rwx, group and others: r-x." },
+        { q: "Which of the following is NOT a Linux distribution?", opts: ["Ubuntu", "CentOS", "Fedora", "Cortana"], correct: 3, explanation: "Cortana is Microsoft's voice assistant, not a Linux distribution." },
+        { q: "What does the <code>ps</code> command in Linux display?", opts: ["File contents", "Currently running processes", "System memory usage", "Disk usage"], correct: 1, explanation: "<code>ps</code> (process status) shows a snapshot of currently running processes." },
+        { q: "The <b>shell</b> in Linux/Unix is:", opts: ["A hardware component", "A command interpreter that sits between the user and the kernel", "A high-level programming language", "Another name for the kernel"], correct: 1, explanation: "The shell (bash, zsh, sh, etc.) reads user commands and translates them into kernel calls." },
+        { q: "Which command shows the CURRENT working directory in Linux?", opts: ["<code>cwd</code>", "<code>pwd</code>", "<code>dir</code>", "<code>here</code>"], correct: 1, explanation: "<code>pwd</code> = 'print working directory'." },
+        { q: "The Linux directory that traditionally contains system-wide configuration files is:", opts: ["<code>/home</code>", "<code>/etc</code>", "<code>/var</code>", "<code>/tmp</code>"], correct: 1, explanation: "<code>/etc</code> holds system configuration files. <code>/home</code> holds user data, <code>/var</code> holds variable data (logs), <code>/tmp</code> is temporary." },
+        { q: "A <b>system call</b> is:", opts: ["A phone number", "An interface allowing user-space programs to request services from the kernel", "A hardware failure event", "A shell script"], correct: 1, explanation: "System calls (e.g. read, write, open, fork) are how programs securely ask the kernel to do privileged work." },
+        { q: "What is <b>context switching</b> in an OS?", opts: ["Changing UI themes", "The OS saving one process's state and loading another's to switch execution", "Screen rotation", "Changing display language"], correct: 1, explanation: "The OS saves the current process's registers, PC and state, then loads another's — the basis of multitasking." },
+        { q: "To view the LAST 10 lines of a log file in Linux, the standard command is:", opts: ["<code>head -n 10 file.log</code>", "<code>tail -n 10 file.log</code>", "<code>cat file.log</code>", "<code>ls file.log</code>"], correct: 1, explanation: "<code>tail</code> shows the end of a file. <code>head</code> shows the beginning. Essential for tailing server logs." },
+        { q: "In Linux, standard output (stdout) can be redirected to a file using:", opts: ["<code>&gt;</code>", "<code>&lt;</code>", "<code>&amp;</code>", "<code>@</code>"], correct: 0, explanation: "<code>&gt;</code> redirects stdout to a file (overwriting); <code>&gt;&gt;</code> appends; <code>&lt;</code> is stdin redirection." },
+        { q: "A <b>daemon</b> in Linux is:", opts: ["A malicious virus", "A background process that runs without direct user interaction (e.g. sshd, cron)", "A GUI window", "A hardware driver"], correct: 1, explanation: "Daemons run in the background providing services. Names often end in 'd': sshd, httpd, mysqld." },
+        { q: "Which command is used to check available disk space in Linux?", opts: ["<code>ls -la</code>", "<code>df -h</code>", "<code>ps aux</code>", "<code>cat /etc/hosts</code>"], correct: 1, explanation: "<code>df</code> = disk free; the <code>-h</code> flag shows human-readable sizes (GB/MB)." }
+      ]
+    },
+    {
+      id: 'B',
+      title: 'Virtualization Techniques',
+      subtitle: 'Hypervisors, virtual machines, containers and orchestration',
+      questions: [
+        { q: "Virtualization primarily enables:", opts: ["Deletion of files", "Running multiple isolated virtual machines on a single physical machine", "Faster internet connections", "Automatic data encryption"], correct: 1, explanation: "Virtualization abstracts physical hardware so many VMs (with their own OS) can share one physical host." },
+        { q: "A <b>hypervisor</b> is:", opts: ["A physical server", "Software that creates, runs and manages virtual machines", "A programming language", "A network protocol"], correct: 1, explanation: "The hypervisor is the layer that partitions physical resources and runs guest VMs." },
+        { q: "A <b>Type 1 (bare-metal)</b> hypervisor:", opts: ["Runs on top of a host operating system", "Runs directly on physical hardware without a host OS", "Is browser-based", "Cannot manage more than one VM"], correct: 1, explanation: "Type 1 runs on the metal (e.g. VMware ESXi, Hyper-V, Xen). Type 2 runs as an app on a host OS." },
+        { q: "Which of the following is a Type 2 (hosted) hypervisor?", opts: ["VMware ESXi", "Microsoft Hyper-V", "Oracle VirtualBox", "Xen"], correct: 2, explanation: "VirtualBox runs on top of your host OS (Windows/macOS/Linux) as a regular application. The other three are Type 1." },
+        { q: "Which of the following is a container platform?", opts: ["Docker", "MySQL", "Apache HTTPD", "Notepad++"], correct: 0, explanation: "Docker is the most widely used container runtime and platform." },
+        { q: "The key architectural difference between containers and virtual machines is that containers:", opts: ["Each include a full guest OS", "Share the host OS kernel, making them lightweight and fast to start", "Are less secure than VMs by design", "Cannot be automated"], correct: 1, explanation: "Containers virtualize at the OS level (sharing the kernel), while VMs virtualize hardware (each with its own kernel). Result: containers start in seconds and use less RAM." },
+        { q: "A company wants to run 500 lightweight microservices with fast startup times on shared infrastructure. Which technology is BEST suited?", opts: ["Full virtual machines", "Containers (e.g. Docker on Kubernetes)", "Physical servers", "Mainframes"], correct: 1, explanation: "Containers are ideal for microservices — quick startup, small footprint, easily orchestrated. A reasoning-based question that mirrors real cloud architecture decisions." },
+        { q: "Which orchestration platform is widely used for managing containerized workloads at scale?", opts: ["Kubernetes", "MongoDB", "Windows Server", "FTP"], correct: 0, explanation: "Kubernetes (K8s) is the de facto standard for container orchestration — scheduling, scaling, healing containers across clusters." },
+        { q: "A <b>snapshot</b> of a VM captures:", opts: ["A screenshot of the desktop", "The state of the VM at a point in time, allowing later restoration", "Only the CPU registers", "Only the user's files"], correct: 1, explanation: "Snapshots preserve disk (and optionally memory) state — used before risky changes or for backups." },
+        { q: "What does <b>live migration</b> of a VM refer to?", opts: ["Copying files between servers", "Moving a running VM from one physical host to another with minimal downtime", "Duplicating a website", "A user log-in event"], correct: 1, explanation: "Live migration copies VM memory to a new host while the VM keeps running — critical for maintenance without downtime." },
+        { q: "VMware ESXi is an example of a:", opts: ["Type 1 (bare-metal) hypervisor", "Type 2 (hosted) hypervisor", "Container runtime", "Traditional OS"], correct: 0, explanation: "ESXi installs directly on physical servers and IS the operating layer — a Type 1 hypervisor." },
+        { q: "In virtualization, <b>over-commitment</b> typically refers to:", opts: ["Allocating more virtual resources (vCPU/vRAM) than physically available on the host", "Buying too many software licenses", "A network outage", "User over-billing"], correct: 0, explanation: "Since VMs rarely use their full allocation simultaneously, hypervisors safely over-allocate — common in dense virtualization." },
+        { q: "A container image typically bundles:", opts: ["The application code together with its dependencies and libraries", "A full guest operating system installation", "Physical hardware drivers", "User email data"], correct: 0, explanation: "A container image packages just what the app needs (code + libs), and reuses the host kernel — that's why images are small compared to VM disks." },
+        { q: "Which command creates and starts a Docker container from an image called <code>nginx</code>?", opts: ["<code>docker install nginx</code>", "<code>docker run nginx</code>", "<code>docker copy nginx</code>", "<code>docker start nginx.exe</code>"], correct: 1, explanation: "<code>docker run &lt;image&gt;</code> is the canonical way to launch a container." },
+        { q: "What is a <b>guest OS</b>?", opts: ["The OS installed directly on the physical host", "The OS running inside a virtual machine", "A user's personal laptop OS", "A backup OS"], correct: 1, explanation: "In virtualization: the host runs the hypervisor; each VM runs a guest OS." },
+        { q: "Which is NOT a genuine benefit of virtualization?", opts: ["Better hardware utilization", "Workload isolation between VMs", "Easier disaster recovery via snapshots", "Automatic elimination of application bugs"], correct: 3, explanation: "Virtualization doesn't fix your code — it just isolates and manages workloads. The other three are real benefits." },
+        { q: "Docker images are typically built from a file named:", opts: ["<code>index.html</code>", "<code>Dockerfile</code>", "<code>config.xml</code>", "<code>settings.ini</code>"], correct: 1, explanation: "A <code>Dockerfile</code> is a text recipe listing the base image and build steps for a container image." },
+        { q: "Hardware-assisted virtualization (Intel VT-x / AMD-V) refers to:", opts: ["A software-only emulator", "CPU features that improve virtualization performance and security", "A brand of server chassis", "A type of GPU"], correct: 1, explanation: "VT-x / AMD-V let hypervisors run guest instructions directly on hardware for near-native performance." },
+        { q: "In a public cloud, virtualization is heavily used to:", opts: ["Isolate different customers' workloads on shared physical hardware", "Send emails to users", "Encrypt user passwords", "Display advertisements"], correct: 0, explanation: "Multi-tenancy is the whole point — many customers share the same servers, isolated by the hypervisor." },
+        { q: "Kubernetes is primarily used to:", opts: ["Manage relational databases", "Orchestrate containerized workloads (deployment, scaling, self-healing) at scale", "Update Windows systems", "Provide VPN tunnels"], correct: 1, explanation: "K8s handles the operational heavy lifting: scheduling containers, keeping them running, scaling out under load." },
+        { q: "<b>Paravirtualization</b> requires:", opts: ["No modifications to the guest OS", "Modifications to the guest OS so it cooperates with the hypervisor", "Special GPUs", "A hardware firewall"], correct: 1, explanation: "Paravirtualized guests are aware they're virtualized and use hypercalls for efficiency — vs full virtualization which is transparent." },
+        { q: "A <b>virtual switch</b> in a virtualized environment:", opts: ["Physically connects Ethernet cables", "Provides network connectivity between VMs on the same host and to the external network", "Controls power supply", "Manages user accounts"], correct: 1, explanation: "Virtual switches (vSwitches) act like physical switches but in software, running inside the hypervisor." },
+        { q: "When a company consolidates 10 VMs onto 1 physical server instead of using 10 separate physical servers, this best illustrates:", opts: ["Server consolidation", "Load balancing", "Content delivery", "Backup"], correct: 0, explanation: "Server consolidation is the classic first business case for virtualization — fewer boxes, less power, less floor space." },
+        { q: "A <b>virtual machine template</b> or <b>golden image</b> is used to:", opts: ["Draw diagrams", "Rapidly deploy multiple identical, pre-configured VMs", "Store user data long-term", "Encrypt VM disks at rest"], correct: 1, explanation: "Golden images embed OS + patches + tooling — new VMs spin up in seconds from the template." },
+        { q: "Which is a widely used OPEN-SOURCE Type 1 hypervisor in cloud infrastructure?", opts: ["KVM (Kernel-based Virtual Machine)", "Microsoft Word", "Apache Tomcat", "Google Chrome"], correct: 0, explanation: "KVM is built into the Linux kernel and powers much of the public cloud (including AWS's Nitro and OpenStack)." }
+      ]
+    },
+    {
+      id: 'C',
+      title: 'Networking',
+      subtitle: 'TCP/IP, OSI model, DNS, HTTP, subnetting and load balancing',
+      questions: [
+        { q: "In networking, <b>IP</b> stands for:", opts: ["Internet Protocol", "Internal Program", "Intelligent Processor", "Interconnect Path"], correct: 0, explanation: "IP is the layer-3 protocol that gets packets from source to destination across networks." },
+        { q: "The OSI reference model has how many layers?", opts: ["5", "6", "7", "4"], correct: 2, explanation: "OSI has 7 layers: Physical, Data Link, Network, Transport, Session, Presentation, Application." },
+        { q: "Which OSI layer is responsible for logical addressing and routing of packets across networks?", opts: ["Physical (Layer 1)", "Data Link (Layer 2)", "Network (Layer 3)", "Application (Layer 7)"], correct: 2, explanation: "Layer 3 is the Network layer — IP addressing and routing live here." },
+        { q: "Which of the following is a Layer 4 (Transport) protocol?", opts: ["IP", "TCP", "HTTP", "Ethernet"], correct: 1, explanation: "TCP and UDP are the two main transport-layer protocols. IP is L3, HTTP is L7, Ethernet is L2." },
+        { q: "The default TCP port for HTTP is:", opts: ["21", "25", "80", "443"], correct: 2, explanation: "HTTP defaults to port 80. Port 21 is FTP, 25 is SMTP, 443 is HTTPS." },
+        { q: "The default TCP port for HTTPS is:", opts: ["22", "80", "443", "8080"], correct: 2, explanation: "HTTPS = HTTP over TLS, standardised on port 443. Port 22 is SSH, 8080 is common for dev HTTP servers." },
+        { q: "The primary role of <b>DNS</b> is to:", opts: ["Encrypt all internet traffic", "Translate human-readable domain names into IP addresses", "Block advertising", "Speed up Wi-Fi"], correct: 1, explanation: "DNS is the internet's phone book: <code>example.com</code> → <code>93.184.216.34</code>." },
+        { q: "An IPv4 address is:", opts: ["32 bits long", "64 bits long", "128 bits long", "256 bits long"], correct: 0, explanation: "IPv4 uses 32 bits, written as four decimal octets (e.g. 192.168.1.1). That's ~4.3 billion addresses total." },
+        { q: "An IPv6 address is:", opts: ["32 bits", "64 bits", "128 bits", "256 bits"], correct: 2, explanation: "IPv6 uses 128 bits — vastly more addresses, written as eight groups of hex (e.g. <code>2001:db8::1</code>)." },
+        { q: "Which of these is a VALID IPv4 address?", opts: ["<code>192.168.1.256</code>", "<code>10.0.0.5</code>", "<code>300.1.1.1</code>", "<code>192.168.1</code>"], correct: 1, explanation: "Each octet must be 0–255, and there must be four of them. 256 and 300 are out of range; the last has only three octets." },
+        { q: "What is the purpose of DHCP?", opts: ["Encrypt network traffic", "Automatically assign IP addresses (and related config) to devices on a network", "Reduce packet size", "Cache web pages"], correct: 1, explanation: "DHCP saves administrators from configuring every device manually — the DHCP server hands out IPs on request." },
+        { q: "Which protocol provides reliable, connection-oriented delivery with retransmission of lost packets?", opts: ["UDP", "TCP", "ICMP", "ARP"], correct: 1, explanation: "TCP guarantees ordered, reliable delivery via handshakes, sequence numbers and acknowledgements." },
+        { q: "Which protocol is connectionless and typically preferred for real-time streaming and DNS lookups?", opts: ["TCP", "UDP", "HTTP", "FTP"], correct: 1, explanation: "UDP has no handshake or retransmission — lower latency, but no delivery guarantees. Good for voice/video/DNS." },
+        { q: "A subnet mask of <code>255.255.255.0</code> in CIDR notation is written as:", opts: ["<code>/24</code>", "<code>/16</code>", "<code>/8</code>", "<code>/30</code>"], correct: 0, explanation: "/24 = 24 network bits + 8 host bits → 256 addresses per subnet, 254 usable." },
+        { q: "The address range <code>10.0.0.0/8</code> is:", opts: ["Publicly routable on the Internet", "A private (RFC 1918) range, not routable on the public Internet", "Reserved for multicast", "Reserved for loopback"], correct: 1, explanation: "RFC 1918 private ranges: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. Used inside orgs and VPCs." },
+        { q: "A <b>firewall</b> primarily:", opts: ["Cools servers", "Filters network traffic based on defined security rules", "Prevents hardware failure", "Backs up data"], correct: 1, explanation: "Firewalls decide which packets/connections to allow or block based on rules (IP, port, protocol, state)." },
+        { q: "A <b>MAC address</b> is:", opts: ["A model of Apple computer", "A unique hardware identifier assigned to a network interface card", "An IP address", "A user password"], correct: 1, explanation: "MAC addresses are 48-bit hardware IDs (e.g. <code>3C:22:FB:A1:...</code>) used at Layer 2 within a local network segment." },
+        { q: "Which network device typically operates at Layer 2 and forwards frames based on MAC addresses?", opts: ["Router", "Switch", "Firewall", "Load balancer"], correct: 1, explanation: "Switches learn MAC-to-port mappings and forward frames intelligently. Routers work at Layer 3 (IP)." },
+        { q: "HTTP is an example of a(n):", opts: ["Transport-layer protocol", "Application-layer protocol", "Network-layer protocol", "Physical-layer protocol"], correct: 1, explanation: "HTTP is Layer 7 (Application). It rides on top of TCP (Layer 4)." },
+        { q: "<b>SSL/TLS</b> is primarily used to:", opts: ["Speed up connections", "Encrypt data in transit between a client and a server", "Compress files", "Store passwords"], correct: 1, explanation: "TLS (successor to SSL) provides confidentiality and integrity for network communication — the S in HTTPS." },
+        { q: "A <b>load balancer</b> is used to:", opts: ["Distribute incoming client requests across multiple back-end servers", "Boost CPU clock speed", "Compress data at rest", "Assign IP addresses"], correct: 0, explanation: "Load balancers (e.g. AWS ELB, NGINX, HAProxy) spread traffic — improving throughput, availability and fault-tolerance." },
+        { q: "A <b>VPN</b> (Virtual Private Network) primarily provides:", opts: ["Faster download speeds", "A secure encrypted tunnel over an untrusted network like the public internet", "Free cloud storage", "Automatic backups"], correct: 1, explanation: "VPNs let you securely connect to a private network (or route traffic through it) from anywhere on the internet." },
+        { q: "In HTTP, which method is idempotent and used to RETRIEVE data from a server?", opts: ["POST", "GET", "DELETE", "PATCH"], correct: 1, explanation: "GET retrieves resources without side-effects (idempotent). POST creates, PATCH partially updates." },
+        { q: "A <b>CDN</b> (Content Delivery Network) is primarily used to:", opts: ["Encrypt websites", "Cache static content on edge servers close to users to reduce latency", "Track user clicks", "Compress email attachments"], correct: 1, explanation: "CDNs (Cloudflare, CloudFront, Akamai) put copies of your content near users worldwide — dramatically reducing load times." },
+        { q: "A web application is slow because most users are geographically far from the origin data center. Which technique would BEST reduce user-perceived latency WITHOUT moving the data center?", opts: ["Use a CDN to cache content at edge locations near users", "Buy more storage at the origin", "Compress user passwords", "Add more firewalls at the origin"], correct: 0, explanation: "A CDN directly addresses geographic latency — a real-world reasoning question the course will revisit in Module 3." }
+      ]
+    },
+    {
+      id: 'D',
+      title: 'Cloud and Web Fundamentals Awareness',
+      subtitle: 'Basic cloud concepts, web APIs, HTTP and service models',
+      questions: [
+        { q: "Which of the following is NOT a major public cloud provider?", opts: ["AWS (Amazon Web Services)", "Microsoft Azure", "Google Cloud Platform (GCP)", "MySQL"], correct: 3, explanation: "MySQL is an open-source database; the other three are the 'big three' public cloud providers." },
+        { q: "Cloud computing is BEST defined as:", opts: ["Wireless internet", "The on-demand delivery of computing resources over the internet with pay-as-you-go pricing", "Weather forecasting software", "A form of file compression"], correct: 1, explanation: "NIST-style definition: on-demand, self-service, network-accessible, elastic resources measured and billed by usage." },
+        { q: "Which cloud service model provides RAW compute, storage and networking that customers manage themselves?", opts: ["SaaS", "PaaS", "IaaS", "FaaS"], correct: 2, explanation: "IaaS (e.g. AWS EC2, Azure VMs) gives you the virtual hardware; you install and manage everything above the OS." },
+        { q: "Gmail and Google Docs are examples of which cloud service model?", opts: ["IaaS", "PaaS", "SaaS", "BaaS"], correct: 2, explanation: "SaaS = Software as a Service — the provider runs everything; you just use the app in a browser." },
+        { q: "A <b>hybrid cloud</b> is:", opts: ["A mix of Wi-Fi and mobile data", "A deployment combining on-premises infrastructure with one or more public clouds", "A hybrid vehicle app", "A tape backup service"], correct: 1, explanation: "Hybrid architectures let organisations keep some workloads on-prem (e.g. for compliance) while bursting into public cloud." },
+        { q: "AWS S3 is primarily used for:", opts: ["Object storage", "Sending email", "Video conferencing", "Word processing"], correct: 0, explanation: "S3 (Simple Storage Service) stores objects (files) in buckets — extremely durable and scalable." },
+        { q: "A cloud <b>region</b> refers to:", opts: ["A programming language runtime", "A geographic area containing one or more isolated data centers (Availability Zones)", "A user group", "A subscription plan"], correct: 1, explanation: "Regions (e.g. <code>ap-south-1</code> Mumbai) let you keep data close to users and inside jurisdictional boundaries." },
+        { q: "In web APIs, <b>REST</b> stands for:", opts: ["Rapid Encryption Software Tool", "Representational State Transfer", "Remote Server Task", "Real-time Server Toolkit"], correct: 1, explanation: "REST is an architectural style for web APIs — resources identified by URLs, manipulated via HTTP methods." },
+        { q: "Which HTTP status code indicates <b>Not Found</b>?", opts: ["200", "301", "404", "500"], correct: 2, explanation: "4xx = client errors; 404 is the classic 'the resource you asked for doesn't exist'." },
+        { q: "HTTP status code <b>200</b> indicates:", opts: ["Client error", "Success (OK)", "Redirection", "Server-side error"], correct: 1, explanation: "2xx = success; 3xx = redirection; 4xx = client error; 5xx = server error." },
+        { q: "Which data-interchange format is MOST commonly used with modern web APIs today?", opts: ["JSON", "DOCX", "MP3", "PDF"], correct: 0, explanation: "JSON is compact, human-readable and native to JavaScript — the default choice for REST APIs." },
+        { q: "An <b>API</b> (Application Programming Interface) is:", opts: ["A category of user", "A defined set of rules and endpoints that lets one application communicate with another", "A type of hardware chip", "A programming language"], correct: 1, explanation: "APIs define what operations one system exposes and how another can call them." },
+        { q: "In the client-server model:", opts: ["The server serves requests initiated by clients", "Two computers always have the same role", "There is only one machine per network", "All data is stored on the client"], correct: 0, explanation: "Client requests, server responds. The web browser (client) talks to a web server, which returns HTML." },
+        { q: "Which of the following is a common web server?", opts: ["NGINX", "Google Chrome", "Microsoft Excel", "Mozilla Firefox"], correct: 0, explanation: "NGINX and Apache HTTPD are the two most popular web servers. Chrome and Firefox are browsers (clients)." },
+        { q: "<b>Auto-scaling</b> in the cloud refers to:", opts: ["Automatically adjusting compute resources up or down based on demand", "Self-driving cars", "Auto-registration of new users", "Automatic full backups"], correct: 0, explanation: "Auto-scaling groups add/remove instances based on metrics (CPU, requests/sec, queue depth) — matching capacity to load." },
+        { q: "<b>Pay-as-you-go</b> pricing in the cloud means:", opts: ["A fixed monthly fee regardless of usage", "You pay only for the resources you actually consume", "All services are permanently free", "A long-term annual commitment is required"], correct: 1, explanation: "Metered billing (by hour, request, GB, etc.) is a defining feature of cloud vs traditional CapEx-heavy IT." },
+        { q: "Cloud <b>elasticity</b> refers to:", opts: ["Rubber-like hardware", "The ability to rapidly scale resources up or down in response to workload changes", "Bendable networking cables", "Encryption key length"], correct: 1, explanation: "Elasticity = handling spikes without permanent over-provisioning. Related to but broader than auto-scaling." },
+        { q: "Which of the following is a <b>SaaS</b> application?", opts: ["Amazon EC2 virtual machine", "Salesforce CRM", "Docker container runtime", "Ubuntu Linux ISO"], correct: 1, explanation: "Salesforce is a fully hosted CRM you use via browser — canonical SaaS. EC2 is IaaS, Docker is infra tooling, Ubuntu is an OS." },
+        { q: "A key advantage of the public cloud over on-premises infrastructure is typically:", opts: ["It is always cheaper regardless of usage", "No upfront hardware capital expenditure and on-demand scaling", "It never has downtime", "It requires no security controls"], correct: 1, explanation: "Cloud shifts IT from CapEx to OpEx and enables rapid scaling — not automatically cheaper for every workload, but far more flexible." },
+        { q: "<b>Multi-tenancy</b> in cloud computing means:", opts: ["Multiple customers securely share the same underlying physical infrastructure while remaining logically isolated", "Support for multiple monitors", "Multi-factor authentication", "Multiple office locations"], correct: 0, explanation: "Multi-tenancy is what makes cloud economics work — many customers ('tenants') share hardware, kept apart by hypervisors and access controls." },
+        { q: "A start-up's user base grows 10× overnight after a viral moment and then shrinks weeks later. Which cloud characteristic BEST addresses this?", opts: ["Elasticity / auto-scaling", "Fixed capacity planning", "On-premises hosting", "Cold archive storage"], correct: 0, explanation: "Scaling out under load and scaling back down (paying only for what's needed) is the elasticity value proposition. Textbook reasoning question." },
+        { q: "Data <b>at rest</b> refers to data that is:", opts: ["Currently being transmitted over the network", "Stored (not actively moving) on disk or object storage", "Held only in CPU registers", "Being processed inside a load balancer"], correct: 1, explanation: "Security discussions distinguish data <i>at rest</i> (on disk), <i>in transit</i> (on the wire), and <i>in use</i> (in memory)." },
+        { q: "In cloud security, <b>IAM</b> stands for:", opts: ["Integrated Access Middleware", "Identity and Access Management", "Internet Application Manager", "International Address Mask"], correct: 1, explanation: "IAM controls who (users/roles) can do what (permissions) on which resources — foundational to every cloud platform." },
+        { q: "<b>Serverless</b> computing means:", opts: ["There are literally no servers involved", "The cloud provider fully manages the servers; the customer just provides code that runs on demand", "The service costs nothing", "Everything runs on the user's laptop"], correct: 1, explanation: "Servers still exist — but you don't manage them. You upload code (e.g. AWS Lambda) and pay per invocation." },
+        { q: "A <b>data lake</b> is best described as:", opts: ["A cooling system for servers", "A centralized repository that stores large amounts of raw structured, semi-structured and unstructured data", "A physical water body near a data center", "A tape-based backup solution"], correct: 1, explanation: "Data lakes (e.g. S3-based) accept data in its native form for later analytics — vs data warehouses which store curated, structured data." }
+      ]
+    }
+  ]
+};
+
+// =================================================================
+// STATE
+// =================================================================
+const TOTAL_QUESTIONS = 100;
+const TOTAL_SECONDS = 120 * 60;
+const STORAGE_KEY = 't3654-quiz-attempt-v1';
+
+let state = {
+  started: false,
+  startedAt: null,
+  answers: {}, // { "A-3": 2, "B-15": 0, ... }
+  candidate: { name: '', roll: '', programme: '' },
+  submitted: false,
+};
+let timerInterval = null;
+
+// =================================================================
+// PERSISTENCE
+// =================================================================
+function saveState() {
+  if (state.submitted) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+function clearSaved() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) { return null; }
+}
+
+// =================================================================
+// FLOW: START
+// =================================================================
+function startQuiz(restored = false) {
+  const name = document.getElementById('s-name').value.trim();
+  const roll = document.getElementById('s-roll').value.trim();
+  const prog = document.getElementById('s-prog').value.trim();
+  if (!restored) {
+    if (!name) { alert('Please enter your name before starting.'); return; }
+    state.candidate = { name, roll, programme: prog };
+    state.started = true;
+    state.startedAt = Date.now();
+    state.answers = {};
+  }
+  saveState();
+
+  document.getElementById('cover').classList.add('hidden');
+  document.getElementById('quiz-area').classList.add('active');
+  document.getElementById('topbar').style.display = 'block';
+
+  renderQuiz();
+  startTimer();
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+// =================================================================
+// RENDER
+// =================================================================
+function renderQuiz() {
+  const area = document.getElementById('quiz-area');
+  let html = '';
+  let absIdx = 0;
+
+  QUIZ.sections.forEach((sec) => {
+    html += `<div class="section-header" id="sec-${sec.id}">
+      <div class="section-tag">Section ${sec.id} · ${sec.questions.length} questions</div>
+      <h2 class="section-title">${sec.title}</h2>
+      <div class="section-meta">${sec.subtitle}</div>
+    </div>`;
+
+    sec.questions.forEach((qObj, i) => {
+      absIdx++;
+      const key = `${sec.id}-${i}`;
+      const selected = state.answers[key];
+      const answered = selected !== undefined;
+      html += `<div class="qcard ${answered ? 'answered' : ''}" id="qcard-${key}">
+        <div class="qhead">
+          <div class="qnum">Q${absIdx}.</div>
+          <div class="qtext">${qObj.q}</div>
+        </div>
+        <ul class="opts">`;
+      qObj.opts.forEach((opt, j) => {
+        const checked = selected === j ? 'checked' : '';
+        html += `<li class="opt"><label>
+          <input type="radio" name="${key}" value="${j}" ${checked} onchange="onAnswer('${key}', ${j})" />
+          <span class="opt-letter">${String.fromCharCode(97 + j)}</span>
+          <span class="opt-text">${opt}</span>
+        </label></li>`;
+      });
+      html += `</ul></div>`;
+    });
+  });
+
+  html += `<div class="submit-panel">
+    <h3>Finished?</h3>
+    <p>Review your answers above before submitting. Once submitted, your responses are final.</p>
+    <div class="summary">
+      <div class="summary-item">Answered: <b id="sp-answered">0</b> / 100</div>
+      <div class="summary-item">Time used: <b id="sp-time">0 min</b></div>
+    </div>
+    <div><button class="btn btn-large" onclick="openSubmitModal()">Submit quiz</button></div>
+  </div>`;
+
+  area.innerHTML = html;
+}
+
+function onAnswer(key, value) {
+  state.answers[key] = value;
+  saveState();
+  const card = document.getElementById(`qcard-${key}`);
+  if (card) card.classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress() {
+  const count = Object.keys(state.answers).length;
+  const pct = (count / TOTAL_QUESTIONS) * 100;
+  const a = document.getElementById('prog-answered');
+  const b = document.getElementById('prog-bar');
+  if (a) a.textContent = count;
+  if (b) b.style.width = pct + '%';
+  const spa = document.getElementById('sp-answered');
+  if (spa) spa.textContent = count;
+  updateTimeUsed();
+}
+
+function updateTimeUsed() {
+  if (!state.startedAt) return;
+  const used = Math.floor((Date.now() - state.startedAt) / 1000);
+  const mins = Math.floor(used / 60);
+  const el = document.getElementById('sp-time');
+  if (el) el.textContent = mins + ' min';
+}
+
+// =================================================================
+// TIMER
+// =================================================================
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(tick, 1000);
+  tick();
+}
+function tick() {
+  if (!state.startedAt || state.submitted) return;
+  const used = Math.floor((Date.now() - state.startedAt) / 1000);
+  const left = TOTAL_SECONDS - used;
+  const tEl = document.getElementById('timer');
+  if (left <= 0) {
+    tEl.textContent = '00:00';
+    submitQuiz(true);
+    return;
+  }
+  const mm = String(Math.floor(left / 60)).padStart(2, '0');
+  const ss = String(left % 60).padStart(2, '0');
+  tEl.textContent = `${mm}:${ss}`;
+  tEl.classList.toggle('warning', left <= 15 * 60 && left > 5 * 60);
+  tEl.classList.toggle('danger', left <= 5 * 60);
+  updateTimeUsed();
+}
+
+// =================================================================
+// MODAL + SUBMIT
+// =================================================================
+function openSubmitModal() {
+  const count = Object.keys(state.answers).length;
+  document.getElementById('confirm-text').innerHTML =
+    `You have answered <b>${count}</b> of ${TOTAL_QUESTIONS} questions. ` +
+    (count < TOTAL_QUESTIONS ? `<br><br>Unanswered questions will be marked as 0. ` : '') +
+    `Once submitted, you cannot change your answers. Are you sure?`;
+  document.getElementById('confirm-modal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('confirm-modal').classList.remove('show');
+}
+function submitQuiz(timeout = false) {
+  state.submitted = true;
+  closeModal();
+  if (timerInterval) clearInterval(timerInterval);
+  clearSaved();
+  renderResults(timeout);
+  document.getElementById('quiz-area').classList.remove('active');
+  document.getElementById('results-area').classList.add('active');
+  document.getElementById('topbar').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+// =================================================================
+// RESULTS
+// =================================================================
+function renderResults(timeout) {
+  const area = document.getElementById('results-area');
+  let total = 0;
+  const sectionScores = {};
+
+  QUIZ.sections.forEach((sec) => {
+    let correct = 0;
+    sec.questions.forEach((qObj, i) => {
+      const key = `${sec.id}-${i}`;
+      if (state.answers[key] === qObj.correct) correct++;
+    });
+    sectionScores[sec.id] = { score: correct, total: sec.questions.length };
+    total += correct;
+  });
+
+  const pct = (total / TOTAL_QUESTIONS) * 100;
+  let band, bandClass, bandAdvice;
+  if (pct >= 80) { band = 'Strong'; bandClass = 'band-strong'; bandAdvice = "You're well prepared. Bring your curiosity to the case studies."; }
+  else if (pct >= 60) { band = 'Adequate'; bandClass = 'band-adequate'; bandAdvice = "Solid foundation. Brush up your weaker section before Module 1."; }
+  else if (pct >= 40) { band = 'Developing'; bandClass = 'band-weak'; bandAdvice = "Some gaps to close. Use the suggested resources before Module 1."; }
+  else { band = 'Foundational'; bandClass = 'band-foundational'; bandAdvice = "Plan a brief pre-course refresher in Linux fundamentals and networking basics."; }
+
+  const candidate = state.candidate;
+  const finishedAt = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+  let html = `
+    <div class="result-hero">
+      <div class="result-eyebrow">${timeout ? 'Time elapsed · auto-submitted' : 'Quiz submitted'} · ${finishedAt}</div>
+      <div class="result-score-display">
+        <span class="result-score">${total}</span><span class="result-total">/100</span>
+      </div>
+      <div><span class="result-band ${bandClass}">${band}</span></div>
+      <div class="result-name">
+        <b>${escapeHtml(candidate.name) || '—'}</b>${candidate.roll ? ' · ' + escapeHtml(candidate.roll) : ''}${candidate.programme ? ' · ' + escapeHtml(candidate.programme) : ''}
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <h3>Section-wise performance</h3>
+      <div class="breakdown-grid">`;
+
+  QUIZ.sections.forEach((sec) => {
+    const s = sectionScores[sec.id];
+    const sp = (s.score / s.total) * 100;
+    html += `<div class="breakdown-row">
+      <div class="breakdown-label">${sec.title}<span>Section ${sec.id} · ${sec.questions.length} questions</span></div>
+      <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width:${sp}%"></div></div>
+      <div class="breakdown-score">${s.score} / ${s.total}</div>
+    </div>`;
+  });
+
+  html += `</div></div>
+
+    <div class="instructor-note">
+      <b>${bandAdvice}</b><br>
+      Please <b>print this page</b> or take a screenshot of your score summary and share it with your course instructor.
+    </div>
+
+    <div class="results-actions">
+      <button class="btn" onclick="window.print()">Print / save as PDF</button>
+      <button class="btn btn-ghost" onclick="scrollToReview()">Review answers</button>
+    </div>
+
+    <div class="review-section" id="review-section">
+      <h3>Review your answers</h3>
+      <p class="review-intro">Every question, your response, the correct answer, and a brief explanation.</p>
+      <div class="review-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterReview('all', this)">All (100)</button>
+        <button class="filter-btn" data-filter="incorrect" onclick="filterReview('incorrect', this)">Incorrect only</button>
+        <button class="filter-btn" data-filter="unanswered" onclick="filterReview('unanswered', this)">Unanswered</button>
+        <button class="filter-btn" data-filter="correct" onclick="filterReview('correct', this)">Correct only</button>
+      </div>
+      <div id="review-list">`;
+
+  let absIdx = 0;
+  QUIZ.sections.forEach((sec) => {
+    sec.questions.forEach((qObj, i) => {
+      absIdx++;
+      const key = `${sec.id}-${i}`;
+      const yourPick = state.answers[key];
+      let status, statusClass, statusLabel;
+      if (yourPick === undefined) { status = 'unanswered'; statusClass = 'status-unanswered'; statusLabel = 'Not answered'; }
+      else if (yourPick === qObj.correct) { status = 'correct'; statusClass = 'status-correct'; statusLabel = 'Correct'; }
+      else { status = 'incorrect'; statusClass = 'status-incorrect'; statusLabel = 'Incorrect'; }
+
+      const yourText = yourPick !== undefined
+        ? `(${String.fromCharCode(97 + yourPick)}) ${qObj.opts[yourPick]}`
+        : '— No answer selected —';
+      const correctText = `(${String.fromCharCode(97 + qObj.correct)}) ${qObj.opts[qObj.correct]}`;
+
+      html += `<div class="review-card ${status}" data-status="${status}">
+        <div class="review-header">
+          <span class="review-num">Q${absIdx}</span>
+          <span style="font-size:11px; color:var(--muted-soft); font-family:'JetBrains Mono',monospace; letter-spacing:0.08em;">SEC ${sec.id}</span>
+          <span class="review-status ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="review-q">${qObj.q}</div>
+        <div class="review-answers">`;
+
+      if (status === 'correct') {
+        html += `<div class="review-ans your correct-pick"><span class="review-ans-label">Your answer</span><span>${yourText}</span></div>`;
+      } else if (status === 'incorrect') {
+        html += `<div class="review-ans your"><span class="review-ans-label">Your answer</span><span>${yourText}</span></div>`;
+        html += `<div class="review-ans right-ans"><span class="review-ans-label">Correct</span><span>${correctText}</span></div>`;
+      } else {
+        html += `<div class="review-ans right-ans"><span class="review-ans-label">Correct</span><span>${correctText}</span></div>`;
+      }
+
+      html += `</div>
+        <div class="review-explanation"><b>Why:</b> ${qObj.explanation}</div>
+      </div>`;
+    });
+  });
+
+  html += `</div></div>`;
+
+  area.innerHTML = html;
+}
+
+function scrollToReview() {
+  document.getElementById('review-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function filterReview(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.review-card').forEach(card => {
+    if (filter === 'all') card.style.display = '';
+    else card.style.display = card.dataset.status === filter ? '' : 'none';
+  });
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// =================================================================
+// SESSION RESTORE
+// =================================================================
+function checkRestore() {
+  const saved = loadSaved();
+  if (!saved || !saved.started || saved.submitted) return;
+  const elapsed = Math.floor((Date.now() - saved.startedAt) / 1000);
+  if (elapsed >= TOTAL_SECONDS) {
+    clearSaved();
+    return;
+  }
+  // pre-fill candidate fields and show restore banner
+  document.getElementById('s-name').value = saved.candidate.name || '';
+  document.getElementById('s-roll').value = saved.candidate.roll || '';
+  document.getElementById('s-prog').value = saved.candidate.programme || '';
+  document.getElementById('restore-banner').classList.add('show');
+  window._savedAttempt = saved;
+}
+function restoreSession() {
+  state = window._savedAttempt;
+  startQuiz(true);
+  document.getElementById('restore-banner').classList.remove('show');
+}
+function discardSession() {
+  clearSaved();
+  document.getElementById('restore-banner').classList.remove('show');
+}
+
+// Enable start button when name has content
+document.addEventListener('DOMContentLoaded', () => {
+  checkRestore();
+});
+
+// Warn before unload during quiz
+window.addEventListener('beforeunload', (e) => {
+  if (state.started && !state.submitted) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+</script>
+</body>
+</html>
