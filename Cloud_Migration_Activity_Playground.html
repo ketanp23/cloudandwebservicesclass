@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Migration Playground — Cloud Migration Activity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B2A38; --ink-2:#0F3B4E; --deep:#065A82; --teal:#1C7293;
+    --signal:#06C39A; --signal-dk:#049B7C; --amber:#E9A317; --coral:#E0574A;
+    --paper:#EEF4F7; --card:#FFFFFF; --line:#CDDDE5; --line-2:#E3EDF1;
+    --muted:#5A7686; --text:#123141;
+    --serif:'Spectral', Georgia, 'Times New Roman', serif;
+    --sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+    --maxw:920px;
+    --shadow:0 1px 2px rgba(11,42,56,.04), 0 8px 24px -12px rgba(11,42,56,.22);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--text);
+    font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--signal); color:var(--ink);}
+
+  /* ---------- scroll progress ---------- */
+  #progress{position:fixed; top:0; left:0; height:3px; width:0%;
+    background:linear-gradient(90deg,var(--signal),var(--teal)); z-index:60; transition:width .1s linear;}
+
+  /* ---------- top nav ---------- */
+  .site-header{position:sticky; top:0; z-index:50; background:rgba(11,42,56,.94);
+    backdrop-filter:blur(8px); border-bottom:1px solid rgba(255,255,255,.08);}
+  .nav{max-width:var(--maxw); margin:0 auto; padding:.6rem 1.3rem; display:flex;
+    align-items:center; gap:1rem; flex-wrap:wrap;}
+  .nav .brand{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--signal); font-weight:600; white-space:nowrap;}
+  .nav .brand b{color:#fff; font-weight:600;}
+  .nav ul{display:flex; gap:.15rem; list-style:none; margin:0; padding:0; flex-wrap:wrap;}
+  .nav a{font-size:.82rem; color:#BcD4DF; color:#B9D2DE; text-decoration:none; padding:.3rem .55rem;
+    border-radius:6px; font-weight:500; white-space:nowrap;}
+  .nav a:hover{background:rgba(255,255,255,.09); color:#fff;}
+  .nav .spacer{flex:1}
+  .btn-print{font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink); background:var(--signal); border:none; padding:.45rem .8rem; border-radius:7px;
+    font-weight:600; cursor:pointer;}
+  .btn-print:hover{background:#fff;}
+
+  /* ---------- layout shell ---------- */
+  main{max-width:var(--maxw); margin:0 auto; padding:0 1.3rem 5rem;}
+  section{scroll-margin-top:70px;}
+
+  /* ---------- hero ---------- */
+  .hero{background:
+      radial-gradient(1100px 380px at 82% -8%, rgba(6,195,154,.16), transparent 60%),
+      radial-gradient(760px 320px at 8% 0%, rgba(28,114,147,.28), transparent 55%),
+      var(--ink);
+    color:#EAF2F5; margin:0 -1.3rem; padding:3.4rem 1.3rem 2.6rem; border-radius:0 0 20px 20px;}
+  .eyebrow{font-family:var(--mono); font-size:.74rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--signal); font-weight:600; display:flex; align-items:center; gap:.55rem;}
+  .eyebrow .dot{width:8px; height:8px; border-radius:50%; background:var(--signal);
+    box-shadow:0 0 0 0 rgba(6,195,154,.6); animation:pulse 2.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(6,195,154,.55)}70%{box-shadow:0 0 0 9px rgba(6,195,154,0)}100%{box-shadow:0 0 0 0 rgba(6,195,154,0)}}
+  .hero h1{font-family:var(--serif); font-weight:800; font-size:clamp(2.5rem,6vw,4rem);
+    line-height:1.02; margin:.9rem 0 .5rem; letter-spacing:-.01em; color:#fff;}
+  .hero .lede{font-size:clamp(1.05rem,2.2vw,1.3rem); color:#C4DAE3; max-width:44ch; font-weight:400;
+    font-family:var(--serif); font-style:italic;}
+  .brief{margin-top:1.9rem; background:rgba(255,255,255,.05); border:1px solid rgba(6,195,154,.35);
+    border-radius:14px; padding:1.25rem 1.4rem;}
+  .brief .tag{font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--signal); font-weight:600;}
+  .brief h2{font-family:var(--serif); font-size:1.5rem; margin:.35rem 0 .5rem; color:#fff; font-weight:700;}
+  .brief p{margin:0; color:#CFE1E9; font-size:1rem;}
+
+  /* rounds launch strip */
+  .launch{display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:1.4rem;}
+  .launch a{position:relative; text-decoration:none; background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:1rem 1rem 1.05rem; color:#EAF2F5;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;}
+  .launch a:hover{transform:translateY(-3px); border-color:var(--signal); background:rgba(6,195,154,.08);}
+  .launch .n{font-family:var(--mono); font-size:.72rem; letter-spacing:.12em; color:var(--signal); font-weight:600;}
+  .launch .t{font-family:var(--serif); font-weight:600; font-size:1.1rem; margin:.25rem 0 .2rem; color:#fff;}
+  .launch .d{font-size:.82rem; color:#AEC8D3;}
+  .launch .time{position:absolute; top:.85rem; right:.9rem; font-family:var(--mono); font-size:.68rem;
+    color:#8FB0BD;}
+
+  /* ---------- section headers ---------- */
+  .sec-head{margin:3.4rem 0 1.3rem;}
+  .sec-eyebrow{font-family:var(--mono); font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--teal); font-weight:600; display:flex; align-items:center; gap:.5rem;}
+  .sec-eyebrow .sq{width:9px; height:9px; background:var(--teal); border-radius:2px;}
+  .sec-head h2{font-family:var(--serif); font-weight:700; font-size:clamp(1.7rem,3.6vw,2.35rem);
+    margin:.45rem 0 .2rem; color:var(--ink); letter-spacing:-.01em; line-height:1.1;}
+  .sec-head p.sub{margin:.1rem 0 0; color:var(--muted); font-size:1.02rem; max-width:60ch;}
+
+  h3{font-family:var(--serif); font-weight:600; font-size:1.28rem; color:var(--ink); margin:2rem 0 .6rem;}
+  h4{font-family:var(--sans); font-weight:700; font-size:1rem; color:var(--deep); margin:1.4rem 0 .4rem;
+    letter-spacing:.005em;}
+  p{margin:.55rem 0;}
+  a.inline{color:var(--deep); font-weight:600;}
+
+  /* ---------- cards & callouts ---------- */
+  .card{background:var(--card); border:1px solid var(--line-2); border-radius:14px; padding:1.4rem 1.5rem;
+    box-shadow:var(--shadow); margin:1.1rem 0;}
+  .callout{border-radius:12px; padding:1.05rem 1.25rem; margin:1.1rem 0; border:1px solid var(--line);
+    background:#F4F9FB;}
+  .callout .lab{font-family:var(--mono); font-size:.68rem; letter-spacing:.13em; text-transform:uppercase;
+    font-weight:600; color:var(--deep); display:block; margin-bottom:.3rem;}
+  .callout.task{background:linear-gradient(180deg,#F0FaF7,#F3F9FB); border-color:rgba(6,195,154,.4);}
+  .callout.task .lab{color:var(--signal-dk);}
+  .callout.discuss{background:#FDF6E7; border-color:#F0D89A;}
+  .callout.discuss .lab{color:#B07C10;}
+  .callout p{margin:.2rem 0;}
+
+  /* ---------- tables ---------- */
+  .tbl{width:100%; border-collapse:separate; border-spacing:0; margin:1rem 0; font-size:.94rem;
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .tbl thead th{background:var(--ink); color:#fff; text-align:left; padding:.62rem .85rem; font-weight:600;
+    font-size:.82rem; letter-spacing:.02em;}
+  .tbl td{padding:.6rem .85rem; border-top:1px solid var(--line-2); vertical-align:top;}
+  .tbl tbody tr:nth-child(even){background:#F5FaFC;}
+  .tbl td.center,.tbl th.center{text-align:center;}
+  .tbl td.num{font-family:var(--mono); text-align:right; white-space:nowrap;}
+  .tbl .strat{font-weight:700; color:var(--deep);}
+  .r-badge{font-family:var(--mono); font-weight:600; font-size:.8rem; color:var(--deep);}
+
+  /* ---------- interactive worksheet (round 1) ---------- */
+  .assign-meter{font-family:var(--mono); font-size:.8rem; color:var(--muted); margin:.2rem 0 .8rem;}
+  .assign-meter b{color:var(--signal-dk);}
+  select.r-select, input.txt, textarea.txt{font-family:var(--sans); font-size:.9rem; color:var(--text);
+    border:1px solid var(--line); border-radius:8px; padding:.42rem .55rem; width:100%; background:#fff;}
+  select.r-select:focus, input.txt:focus, textarea.txt:focus, input.num-in:focus{
+    outline:2px solid var(--signal); outline-offset:1px; border-color:var(--signal);}
+  select.r-select{background:#F8FBFC url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23065A82' stroke-width='1.6'/></svg>") no-repeat right .55rem center;
+    -webkit-appearance:none; appearance:none; padding-right:1.7rem;}
+  .assigned select.r-select{border-color:var(--signal); background-color:#EFFbF7;}
+  textarea.txt{resize:vertical; min-height:2.4rem;}
+
+  /* ---------- TCO calculator ---------- */
+  .calc-grid{display:grid; grid-template-columns:1fr 1fr; gap:1rem;}
+  .calc-col{background:var(--card); border:1px solid var(--line-2); border-radius:14px; overflow:hidden;
+    box-shadow:var(--shadow);}
+  .calc-col header{padding:.8rem 1rem; color:#fff; font-family:var(--serif); font-weight:600; font-size:1.08rem;
+    display:flex; justify-content:space-between; align-items:baseline;}
+  .calc-col.onprem header{background:linear-gradient(100deg,#5C6B72,#41535C);}
+  .calc-col.cloud header{background:linear-gradient(100deg,var(--deep),var(--teal));}
+  .calc-col header .cap{font-family:var(--mono); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; opacity:.85; font-weight:500;}
+  .cost-row{display:flex; align-items:center; gap:.6rem; padding:.42rem 1rem; border-top:1px solid var(--line-2);}
+  .cost-row:first-of-type{border-top:none;}
+  .cost-row label{flex:1; font-size:.86rem; color:var(--text); line-height:1.25;}
+  .cost-row .type{font-family:var(--mono); font-size:.6rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); background:#EEF3F5; padding:.12rem .35rem; border-radius:4px; white-space:nowrap;}
+  .cost-row .type.one{color:#B07C10; background:#FaF1DA;}
+  .rupee{display:flex; align-items:center; gap:2px; font-family:var(--mono);}
+  .rupee span{color:var(--muted); font-size:.85rem;}
+  input.num-in{font-family:var(--mono); font-size:.9rem; width:62px; text-align:right; border:1px solid var(--line);
+    border-radius:6px; padding:.28rem .35rem; background:#fff; -moz-appearance:textfield;}
+  input.num-in::-webkit-outer-spin-button, input.num-in::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+  .cost-total{display:flex; justify-content:space-between; align-items:center; padding:.6rem 1rem;
+    border-top:2px solid var(--line); background:#F5FaFC; font-size:.9rem;}
+  .cost-total .v{font-family:var(--mono); font-weight:600; color:var(--ink);}
+  .cost-tco{display:flex; justify-content:space-between; align-items:baseline; padding:.7rem 1rem;
+    background:var(--ink); color:#fff;}
+  .cost-tco .lab{font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; opacity:.85;}
+  .cost-tco .v{font-family:var(--mono); font-weight:600; font-size:1.35rem;}
+  .cloud .cost-tco{background:var(--deep);}
+
+  /* results console */
+  .results{background:var(--ink); color:#EAF2F5; border-radius:14px; padding:1.3rem 1.4rem; margin-top:1.1rem;
+    box-shadow:var(--shadow);}
+  .results-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem;}
+  .results-head .t{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--signal);}
+  .btn-reset{font-family:var(--mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;
+    background:transparent; border:1px solid rgba(255,255,255,.25); color:#CFE1E9; padding:.35rem .6rem; border-radius:6px;}
+  .btn-reset:hover{border-color:var(--signal); color:#fff;}
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem;}
+  .stat{background:rgba(255,255,255,.05); border-radius:10px; padding:.8rem .85rem;}
+  .stat .k{font-family:var(--mono); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; color:#9CBBC7;}
+  .stat .val{font-family:var(--mono); font-weight:600; font-size:1.5rem; margin-top:.2rem; color:#fff; transition:color .2s;}
+  .stat.good .val{color:var(--signal);}
+  .stat .val.flash{animation:flash .5s ease;}
+  @keyframes flash{0%{background:rgba(6,195,154,.35)}100%{background:transparent}}
+  .cmp-bar{margin-top:1.1rem;}
+  .cmp-bar .row{display:flex; align-items:center; gap:.7rem; margin:.4rem 0; font-size:.82rem;}
+  .cmp-bar .rl{width:88px; font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:#B9D2DE;}
+  .cmp-bar .track{flex:1; background:rgba(255,255,255,.07); border-radius:6px; height:22px; overflow:hidden;}
+  .cmp-bar .fill{height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end;
+    padding-right:.5rem; font-family:var(--mono); font-size:.72rem; color:#fff; transition:width .35s ease;}
+  .cmp-bar .fill.op{background:linear-gradient(90deg,#6b7a82,#51636c);}
+  .cmp-bar .fill.cl{background:linear-gradient(90deg,var(--teal),var(--signal));}
+
+  /* ---------- pillars (round 3A) ---------- */
+  .pillar-grid{display:grid; grid-template-columns:1fr 1fr; gap:.8rem;}
+  .pillar{background:var(--card); border:1px solid var(--line-2); border-radius:11px; padding:.85rem 1rem;}
+  .pillar .pn{font-family:var(--sans); font-weight:700; color:var(--deep); font-size:.95rem; margin-bottom:.35rem;
+    display:flex; align-items:center; gap:.45rem;}
+  .pillar .pn i{width:8px; height:8px; border-radius:50%; background:var(--teal);}
+
+  /* ---------- go/no-go console ---------- */
+  .console{background:var(--ink); border-radius:16px; padding:1.4rem 1.5rem; color:#EAF2F5; box-shadow:var(--shadow);
+    margin:1.1rem 0;}
+  .console .chead{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--signal);
+    margin-bottom:.9rem; display:flex; align-items:center; gap:.5rem;}
+  .crit{display:grid; grid-template-columns:22px 1fr 1fr; gap:.8rem; align-items:center; padding:.6rem 0;
+    border-top:1px solid rgba(255,255,255,.09);}
+  .crit:first-of-type{border-top:none;}
+  .light{width:15px; height:15px; border-radius:50%; box-shadow:0 0 8px 0 currentColor; margin-left:3px;}
+  .light.g{background:var(--signal); color:rgba(6,195,154,.7);}
+  .light.a{background:var(--amber); color:rgba(233,163,23,.6);}
+  .light.r{background:var(--coral); color:rgba(224,87,74,.6);}
+  .crit .cr{font-size:.86rem; color:#CFE1E9;}
+  .crit .cr b{color:#fff; font-weight:600;}
+  .crit .rs{font-size:.86rem; color:#EAF2F5;}
+  .crit .rs .status{font-family:var(--mono); font-size:.62rem; letter-spacing:.05em; text-transform:uppercase;
+    display:inline-block; padding:.1rem .4rem; border-radius:4px; margin-left:.35rem; vertical-align:middle;}
+  .status.g{background:rgba(6,195,154,.18); color:var(--signal);}
+  .status.a{background:rgba(233,163,23,.18); color:var(--amber);}
+  .status.r{background:rgba(224,87,74,.2); color:#F3A69D;}
+
+  .verdict{display:flex; gap:.7rem; margin:1.3rem 0 .7rem; flex-wrap:wrap;}
+  .verdict button{flex:1; min-width:140px; font-family:var(--mono); font-size:.8rem; letter-spacing:.06em;
+    text-transform:uppercase; font-weight:600; padding:.8rem .6rem; border-radius:10px; cursor:pointer;
+    background:rgba(255,255,255,.05); color:#CFE1E9; border:1.5px solid rgba(255,255,255,.18); transition:all .15s;}
+  .verdict button:hover{border-color:currentColor;}
+  .verdict button[data-v="go"]:hover, .verdict button[data-v="go"].on{background:rgba(6,195,154,.16); border-color:var(--signal); color:var(--signal);}
+  .verdict button[data-v="cond"]:hover, .verdict button[data-v="cond"].on{background:rgba(233,163,23,.16); border-color:var(--amber); color:var(--amber);}
+  .verdict button[data-v="nogo"]:hover, .verdict button[data-v="nogo"].on{background:rgba(224,87,74,.16); border-color:var(--coral); color:#F3A69D;}
+  .verdict button.on{box-shadow:0 0 0 3px rgba(255,255,255,.06);}
+  .reasoning label{font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:#9CBBC7; display:block; margin-bottom:.3rem;}
+  .reasoning textarea{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); color:#EAF2F5;}
+  .reasoning textarea:focus{outline:2px solid var(--signal);}
+
+  /* ---------- run-sheet ---------- */
+  .runsheet .tbl td:first-child{font-family:var(--mono); font-size:.82rem; color:var(--deep); white-space:nowrap;}
+
+  /* ---------- reading primer chips ---------- */
+  .primer-note{font-size:.92rem; color:var(--muted); font-style:italic;}
+  ul.clean{margin:.5rem 0; padding-left:1.15rem;}
+  ul.clean li{margin:.32rem 0;}
+  ul.clean li::marker{color:var(--teal);}
+
+  /* ---------- answer key (instructor) ---------- */
+  .instructor-bar{display:flex; align-items:center; gap:1rem; flex-wrap:wrap; background:#FbEEEC;
+    border:1px solid #F0C4BE; border-radius:12px; padding:1rem 1.25rem; margin:1.1rem 0;}
+  .instructor-bar .txt{flex:1; min-width:220px; font-size:.92rem; color:#8A3A30;}
+  .instructor-bar .txt b{color:#6E2A22;}
+  .btn-reveal{font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; cursor:pointer;
+    background:var(--coral); color:#fff; border:none; padding:.55rem 1rem; border-radius:8px; font-weight:600;}
+  .btn-reveal:hover{background:#C9463A;}
+  #answerKey{display:none;}
+  #answerKey.shown{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+  .ans-block{border-left:3px solid var(--signal); padding-left:1rem; margin:1.4rem 0;}
+  .teach{background:#EFF6F9; border-radius:9px; padding:.7rem .9rem; font-size:.9rem; margin:.7rem 0;}
+  .teach b{color:var(--teal);}
+
+  /* ---------- glossary ---------- */
+  dl.gloss{display:grid; grid-template-columns:auto 1fr; gap:.1rem 1.1rem; margin:1rem 0;}
+  dl.gloss dt{font-weight:700; color:var(--deep); padding:.4rem 0; border-top:1px solid var(--line-2); font-size:.92rem;}
+  dl.gloss dd{margin:0; padding:.4rem 0; border-top:1px solid var(--line-2); color:var(--text); font-size:.92rem;}
+  dl.gloss dt:first-of-type, dl.gloss dd:first-of-type{border-top:none;}
+
+  .formula{font-family:var(--mono); font-size:.82rem; color:var(--muted); text-align:center; margin-top:1rem;
+    background:#F4F9FB; border:1px dashed var(--line); border-radius:8px; padding:.7rem;}
+
+  /* ---------- student submit panel ---------- */
+  .submit-panel{background:linear-gradient(160deg,#0F3B4E,#0B2A38); color:#EAF2F5; border-radius:16px;
+    padding:1.9rem 1.6rem; text-align:center; box-shadow:var(--shadow); border:1px solid rgba(6,195,154,.32); margin:1.1rem 0;}
+  .submit-panel .lab{font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--signal);}
+  .submit-panel h3{font-family:var(--serif); color:#fff; margin:.45rem 0 .35rem; font-size:1.55rem;}
+  .submit-panel p{color:#C4DAE3; margin:.2rem auto .95rem; max-width:54ch; font-size:.98rem;}
+  .btn-submit{font-family:var(--mono); font-size:.82rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600;
+    background:var(--signal); color:var(--ink); border:none; padding:.85rem 1.7rem; border-radius:10px; cursor:pointer;
+    transition:transform .12s ease, background .15s ease;}
+  .btn-submit:hover{transform:translateY(-2px); background:#fff;}
+  .btn-submit:focus-visible{outline:2px solid #fff; outline-offset:3px;}
+  .btn-submit.done{background:var(--signal-dk); color:#fff; cursor:default; transform:none;}
+  .submit-summary{margin-top:1.1rem; font-size:.9rem; color:#CFE1E9; background:rgba(6,195,154,.1);
+    border:1px solid rgba(6,195,154,.3); border-radius:10px; padding:.75rem 1rem; text-align:left;}
+  .submit-summary b{color:#fff;}
+  .submit-summary a{color:var(--signal); font-weight:600; text-decoration:none;}
+  .submit-summary a:hover{text-decoration:underline;}
+  .your-call{background:#FDF6E7; border:1px solid #F0D89A; border-radius:8px; padding:.5rem .8rem; font-size:.9rem;
+    margin:.6rem 0 .2rem;}
+  .your-call b{color:#B07C10;}
+
+  footer.pg{margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line); color:var(--muted);
+    font-size:.82rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem;}
+  footer .mono{font-family:var(--mono); font-size:.72rem; letter-spacing:.06em;}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:720px){
+    .launch, .calc-grid, .stat-row, .pillar-grid{grid-template-columns:1fr;}
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .nav ul{display:none;}
+    .crit{grid-template-columns:22px 1fr; }
+    .crit .rs{grid-column:2;}
+    dl.gloss{grid-template-columns:1fr;}
+    dl.gloss dd{border-top:none; padding-top:0;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important; scroll-behavior:auto !important;}
+  }
+
+  /* ---------- print ---------- */
+  @media print{
+    :root{--maxw:100%;}
+    body{background:#fff; font-size:11pt;}
+    #progress,.site-header,.btn-print,.btn-reset,.btn-reveal,.instructor-bar .btn-reveal,.launch .time,.submit-panel{display:none !important;}
+    .hero{margin:0; border-radius:0; color:#000; background:#fff; padding:.4in 0; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .hero h1,.brief h2,.hero .lede,.brief p,.brief .tag,.eyebrow{color:#000 !important;}
+    .hero, .results, .console, .calc-col header, .cost-tco, .tbl thead th{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    /* answer key prints only if the instructor has revealed it on screen */
+    section{page-break-inside:auto;}
+    .sec-head{page-break-after:avoid;}
+    .card,.callout,.calc-col,.results,.console,.pillar{page-break-inside:avoid;}
+    a{color:inherit; text-decoration:none;}
+    .launch a{border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<header class="site-header">
+  <nav class="nav" aria-label="Section navigation">
+    <span class="brand"><b>Migration</b> Playground</span>
+    <div class="spacer"></div>
+    <ul>
+      <li><a href="#brief">Brief</a></li>
+      <li><a href="#runsheet">Run-sheet</a></li>
+      <li><a href="#primer">Primer</a></li>
+      <li><a href="#round1">Round 1</a></li>
+      <li><a href="#round2">Round 2</a></li>
+      <li><a href="#round3">Round 3</a></li>
+      <li><a href="#submit">Submit</a></li>
+      <li><a href="#answers">Answers</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+    </ul>
+    <button class="btn-print" onclick="window.print()">Print / PDF</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="brief">
+    <div class="eyebrow"><span class="dot"></span> Hands-on activity · 60 minutes</div>
+    <h1>The Migration<br>Playground</h1>
+    <p class="lede">Plan, cost, design and validate a real cloud migration — as a management team.</p>
+
+    <div class="brief">
+      <span class="tag">Mission brief · the company you'll work with</span>
+      <h2>FreshFarm</h2>
+      <p>A 4-year-old grocery-delivery startup operating in 3 Indian cities with 250,000 active customers. Everything runs on rented physical servers in a colocation data centre. Every weekend the ordering app slows down and sometimes crashes at peak demand — orders are lost. The company also can't launch in new cities fast enough. The board has asked your team to evaluate moving to the cloud.</p>
+    </div>
+
+    <div class="launch">
+      <a href="#round1"><span class="time">18 min</span><div class="n">Round 01</div><div class="t">Strategy War Room</div><div class="d">Match each system to one of the 6 R's</div></a>
+      <a href="#round2"><span class="time">18 min</span><div class="n">Round 02</div><div class="t">The Business Case</div><div class="d">Compute TCO, saving, ROI &amp; payback</div></a>
+      <a href="#round3"><span class="time">18 min</span><div class="n">Round 03</div><div class="t">Design &amp; Go-Live</div><div class="d">Pressure-test the design, then decide</div></a>
+    </div>
+  </section>
+
+  <!-- ===================== RUN-SHEET ===================== -->
+  <section id="runsheet" class="runsheet">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span> Facilitator</div>
+      <h2>The 60-minute run-sheet</h2>
+      <p class="sub">Suggested timing. Keep rounds tight — the debrief is where the learning lands. Teams of 4–5 work best.</p>
+    </div>
+    <table class="tbl">
+      <thead><tr><th>Time</th><th>Segment</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>0–4 min</td><td><b>Set-up</b></td><td>Form teams, read the FreshFarm brief aloud</td></tr>
+        <tr><td>4–22</td><td><b>Round 1 — Strategy</b></td><td>Assign a migration R to each system; one team shares</td></tr>
+        <tr><td>22–40</td><td><b>Round 2 — Business case</b></td><td>Fill the TCO tables; compute saving, ROI, payback</td></tr>
+        <tr><td>40–56</td><td><b>Round 3 — Design &amp; Go/No-Go</b></td><td>Map the six pillars, review test results, make the call</td></tr>
+        <tr><td>56–60</td><td><b>Debrief</b></td><td>Vote on the go/no-go; connect back to the lecture</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><span class="lab">Materials each team needs</span>
+      This page (or a printout) · a calculator · the four-part lecture as reference (fundamentals → planning → design → validation). No cloud accounts required — every decision here is a management judgement.</div>
+  </section>
+
+  <!-- ===================== PRIMER ===================== -->
+  <section id="primer">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span> Reference</div>
+      <h2>Reading primer</h2>
+      <p class="sub">A five-minute refresher on the ideas you'll use. Skim it now; come back to any part during the rounds.</p>
+    </div>
+
+    <h3>1 · The cloud, in one line</h3>
+    <p>The cloud is renting computing power (servers, storage, databases) over the internet instead of buying and running the machines yourself. Like electricity: you plug in, use what you need, and get a monthly bill — no power plant of your own.</p>
+
+    <h3>2 · The financial shift: CapEx → OpEx</h3>
+    <p>Owning hardware is a large, up-front <b>Capital Expenditure (CapEx)</b> that depreciates and locks up cash. Cloud turns it into a flexible, monthly <b>Operating Expenditure (OpEx)</b> that rises and falls with actual use. Finance teams value this because spending flexes with revenue and capital isn't tied up in fast-obsoleting equipment.</p>
+
+    <h3>3 · Service models — how much is done for you</h3>
+    <ul class="clean">
+      <li><b>IaaS</b> (Infrastructure as a Service): you rent raw servers &amp; storage and still run the software. Most control, most effort.</li>
+      <li><b>PaaS</b> (Platform as a Service): the provider runs the servers and operating system; you just deploy your app.</li>
+      <li><b>SaaS</b> (Software as a Service): ready-made software you simply log in to — Gmail, Zoom, Salesforce.</li>
+    </ul>
+
+    <h3>4 · The 6 R's — one strategy per system</h3>
+    <p>You rarely move everything the same way. For each application, pick the R that best balances effort, cost and benefit:</p>
+    <table class="tbl">
+      <thead><tr><th>Strategy</th><th>Nickname</th><th>In plain terms</th></tr></thead>
+      <tbody>
+        <tr><td class="strat">Rehost</td><td>Lift &amp; shift</td><td>Move it as-is to cloud servers. Fast, least benefit.</td></tr>
+        <tr><td class="strat">Replatform</td><td>Lift &amp; tweak</td><td>Small optimisations (e.g. a managed database) while moving.</td></tr>
+        <tr><td class="strat">Repurchase</td><td>Drop &amp; shop</td><td>Replace it with a SaaS product.</td></tr>
+        <tr><td class="strat">Refactor</td><td>Re-architect</td><td>Rebuild it to be cloud-native. Most effort, most long-term gain.</td></tr>
+        <tr><td class="strat">Retire</td><td>Switch off</td><td>Turn off apps nobody really uses — instant saving.</td></tr>
+        <tr><td class="strat">Retain</td><td>Revisit later</td><td>Leave it where it is for now — not ready or not worth moving.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5 · Building the business case</h3>
+    <ul class="clean">
+      <li><b>TCO</b> (Total Cost of Ownership): every cost over a period — hardware, data-centre, licences, staff, downtime, and on the cloud side, migration + monthly usage. Compare on-premise TCO vs cloud TCO.</li>
+      <li><b>ROI</b> (Return on Investment): net benefit ÷ cost. Did the money returned beat the money spent?</li>
+      <li><b>Payback period:</b> how long until the savings recover the migration spend.</li>
+      <li><b>Intangibles:</b> benefits a spreadsheet misses — no crashes, faster launches, happier customers. Name them; quantify where you can.</li>
+    </ul>
+
+    <h3>6 · Design — the six pillars</h3>
+    <p>A good cloud design answers six manager-level questions (the "Well-Architected" pillars):</p>
+    <ul class="clean">
+      <li><b>Cost</b> — are we spending efficiently, with no waste?</li>
+      <li><b>Reliability</b> — will it stay up and recover from failures?</li>
+      <li><b>Performance</b> — is it fast enough at peak scale?</li>
+      <li><b>Security</b> — is data and access properly protected?</li>
+      <li><b>Operations</b> — can we monitor, update and run it smoothly?</li>
+      <li><b>Sustainability</b> — are we mindful of energy and efficiency?</li>
+    </ul>
+
+    <h3>7 · Validation — proof before trust</h3>
+    <p>Before go-live you prove the migration works: a <b>Proof of Concept</b> (can it work at all?), a <b>Pilot</b> (does it work for real users, in one region?), and testing for performance, data integrity, security, user acceptance (UAT) and cost. Leadership then reviews the results against pre-agreed criteria and makes a <b>GO / CONDITIONAL / NO-GO</b> decision, with a tested rollback plan ready.</p>
+  </section>
+
+  <!-- ===================== ROUND 1 ===================== -->
+  <section id="round1">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span> Round 01 · Strategy War Room · 18 min</div>
+      <h2>Match each system to one of the 6 R's</h2>
+    </div>
+    <div class="callout task"><span class="lab">Your task</span>
+      You are FreshFarm's migration steering group. For <b>each</b> system below, choose one of the 6 R's and write a one-line reason. There is no single "correct" answer — but be ready to defend your logic on cost, risk and benefit.</div>
+
+    <h4>FreshFarm's system inventory</h4>
+    <table class="tbl">
+      <thead><tr><th class="center" style="width:36px">#</th><th style="width:210px">System</th><th>What it does &amp; its condition</th></tr></thead>
+      <tbody>
+        <tr><td class="center">1</td><td><b>Customer ordering app</b></td><td>The core web + mobile app. Crashes at weekend peaks. Built in-house 4 years ago.</td></tr>
+        <tr><td class="center">2</td><td><b>In-house email server</b></td><td>Self-managed mail for 120 staff. Constant patching, occasional outages.</td></tr>
+        <tr><td class="center">3</td><td><b>Delivery-driver tracking</b></td><td>Custom app that tracks drivers. Works fine but sits on ageing servers.</td></tr>
+        <tr><td class="center">4</td><td><b>Accounting software</b></td><td>A 10-year-old desktop finance package. Clunky, hard to access remotely.</td></tr>
+        <tr><td class="center">5</td><td><b>Analytics &amp; reports</b></td><td>Sales reports run manually each week on a spreadsheet server. Slow, fragile.</td></tr>
+        <tr><td class="center">6</td><td><b>Legacy SMS gateway</b></td><td>Sent order texts. Now replaced by in-app notifications; barely used.</td></tr>
+        <tr><td class="center">7</td><td><b>Customer database</b></td><td>Holds personal data (names, addresses, phone). Must follow India's DPDP rules.</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Your worksheet — assign an R</h4>
+    <div class="assign-meter">Assigned <b><span id="assignCount">0</span>/7</b></div>
+    <table class="tbl" id="r1table">
+      <thead><tr><th class="center" style="width:36px">#</th><th style="width:190px">System</th><th style="width:160px">Chosen R</th><th>One-line reason</th></tr></thead>
+      <tbody>
+        <!-- rows injected by JS -->
+      </tbody>
+    </table>
+    <div class="callout discuss"><span class="lab">Share-out · 2 min</span>
+      Which system did your team argue about most, and why? Did anyone choose <b>Retire</b> for system 6 — the easiest saving people forget?</div>
+  </section>
+
+  <!-- ===================== ROUND 2 ===================== -->
+  <section id="round2">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span> Round 02 · The Business Case · 18 min</div>
+      <h2>Cost it out — live TCO calculator</h2>
+      <p class="sub">The board won't approve a migration on vibes. The figures are pre-filled from FreshFarm's data — edit any of them and every total updates instantly. All amounts are in ₹ lakh (100 lakh = ₹1 crore).</p>
+    </div>
+
+    <div class="calc-grid">
+      <!-- ON-PREM -->
+      <div class="calc-col onprem">
+        <header>Stay on-premise <span class="cap">Option A</span></header>
+        <div class="cost-row"><label>Server hardware refresh (due Year 1)</label><span class="type one">One-time</span><span class="rupee"><span>₹</span><input class="num-in" id="op_hw" type="number" value="60" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Colocation — space, power, cooling</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="op_colo" type="number" value="18" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Software licences</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="op_lic" type="number" value="12" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>IT operations staff</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="op_staff" type="number" value="24" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Backup &amp; disaster recovery</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="op_dr" type="number" value="6" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Downtime — lost weekend orders</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="op_down" type="number" value="15" min="0"><span>L</span></span></div>
+        <div class="cost-total"><span>Annual operating total</span><span class="v" id="op_annual">₹75 L</span></div>
+        <div class="cost-tco"><span class="lab">3-year TCO</span><span class="v" id="op_tco">₹285 L</span></div>
+      </div>
+      <!-- CLOUD -->
+      <div class="calc-col cloud">
+        <header>Move to the cloud <span class="cap">Option B</span></header>
+        <div class="cost-row"><label>Migration project</label><span class="type one">One-time</span><span class="rupee"><span>₹</span><input class="num-in" id="cl_mig" type="number" value="35" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Cloud usage — compute, storage, DB</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="cl_use" type="number" value="42" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Software licences (reduced)</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="cl_lic" type="number" value="4" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>IT operations staff (leaner)</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="cl_staff" type="number" value="12" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Backup &amp; DR (built-in)</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="cl_dr" type="number" value="2" min="0"><span>L</span></span></div>
+        <div class="cost-row"><label>Downtime — lost orders (auto-scaling)</label><span class="type">/yr</span><span class="rupee"><span>₹</span><input class="num-in" id="cl_down" type="number" value="1" min="0"><span>L</span></span></div>
+        <div class="cost-total"><span>Annual operating total</span><span class="v" id="cl_annual">₹61 L</span></div>
+        <div class="cost-tco"><span class="lab">3-year TCO</span><span class="v" id="cl_tco">₹218 L</span></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results">
+      <div class="results-head">
+        <span class="t">◆ The verdict, computed</span>
+        <button class="btn-reset" id="resetCalc">↺ Reset to FreshFarm figures</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat good"><div class="k">3-year saving</div><div class="val" id="r_saving">₹67 L</div></div>
+        <div class="stat good"><div class="k">Lower by</div><div class="val" id="r_pct">24%</div></div>
+        <div class="stat good"><div class="k">ROI (3-yr)</div><div class="val" id="r_roi">191%</div></div>
+        <div class="stat"><div class="k">Payback · operating</div><div class="val" id="r_pb1">2.5 yr</div></div>
+      </div>
+      <div class="cmp-bar">
+        <div class="row"><span class="rl">On-premise</span><div class="track"><div class="fill op" id="bar_op" style="width:100%">₹285 L</div></div></div>
+        <div class="row"><span class="rl">Cloud</span><div class="track"><div class="fill cl" id="bar_cl" style="width:76%">₹218 L</div></div></div>
+      </div>
+      <p style="margin:1rem 0 0; font-size:.88rem; color:#B9D2DE;">
+        Counting the avoided ₹60 L hardware refresh, Year-1 benefit is <b id="r_y1" style="color:#fff; font-weight:600;">₹74 L</b> — so payback drops to <b id="r_pb2" style="color:var(--signal); font-weight:600;">~6 months</b>. Which payback would you put in front of the board?</p>
+    </div>
+
+    <div class="callout discuss"><span class="lab">Discussion · 2 min</span>
+      Payback looks very different if you count the avoided hardware refresh. Which number would you present — the cautious one or the full one — and why? What <i>intangible</i> would you add that isn't in these tables?</div>
+  </section>
+
+  <!-- ===================== ROUND 3 ===================== -->
+  <section id="round3">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span> Round 03 · Design &amp; Go-Live · 18 min</div>
+      <h2>Pressure-test the design, then make the call</h2>
+    </div>
+
+    <h4>Part A — the proposed FreshFarm design</h4>
+    <div class="callout"><span class="lab">The blueprint</span>
+      Customers → a load balancer → an auto-scaling group of app servers (more added at weekend peaks, removed after) → a managed database for orders &amp; customers → object storage for images and backups. Data is kept in an Indian region, encrypted, with monitoring and alerts across everything.</div>
+    <p>For each pillar, note one thing this design does well <b>or</b> one question you'd still ask the architects:</p>
+    <div class="pillar-grid">
+      <div class="pillar"><div class="pn"><i></i>Cost</div><textarea class="txt" rows="2" placeholder="Strength or question…"></textarea></div>
+      <div class="pillar"><div class="pn"><i></i>Reliability</div><textarea class="txt" rows="2" placeholder="Strength or question…"></textarea></div>
+      <div class="pillar"><div class="pn"><i></i>Performance</div><textarea class="txt" rows="2" placeholder="Strength or question…"></textarea></div>
+      <div class="pillar"><div class="pn"><i></i>Security</div><textarea class="txt" rows="2" placeholder="Strength or question…"></textarea></div>
+      <div class="pillar"><div class="pn"><i></i>Operations</div><textarea class="txt" rows="2" placeholder="Strength or question…"></textarea></div>
+      <div class="pillar"><div class="pn"><i></i>Sustainability</div><textarea class="txt" rows="2" placeholder="Strength or question…"></textarea></div>
+    </div>
+
+    <h4>Part B — the go / no-go console</h4>
+    <p>It is two weeks before launch. Validation is done. Here are the results against the criteria <b>agreed in advance</b>. Read the status lights, then cast your committee's call.</p>
+    <div class="console">
+      <div class="chead">◆ Pre-launch validation · criteria vs results</div>
+      <div class="crit"><span class="light r"></span><span class="cr"><b>Handle 10× peak traffic.</b> Target: 10×</span><span class="rs">Held 8× before slowing <span class="status r">Miss</span></span></div>
+      <div class="crit"><span class="light a"></span><span class="cr"><b>Data migrated &amp; reconciled.</b> Target: 100%</span><span class="rs">99.98% matched; 0.02% mismatch <span class="status a">Fix</span></span></div>
+      <div class="crit"><span class="light a"></span><span class="cr"><b>Security scan.</b> Target: no critical issues</span><span class="rs">Passed; 1 medium open <span class="status a">Fix</span></span></div>
+      <div class="crit"><span class="light g"></span><span class="cr"><b>UAT sign-off.</b> Target: business approval</span><span class="rs">Signed off; checkout works <span class="status g">Pass</span></span></div>
+      <div class="crit"><span class="light a"></span><span class="cr"><b>Running cost.</b> Target: ≤ ₹42 L/yr</span><span class="rs">Projected ₹45 L/yr <span class="status a">Over</span></span></div>
+      <div class="crit"><span class="light g"></span><span class="cr"><b>Rollback plan.</b> Target: tested &amp; ready</span><span class="rs">Tested successfully <span class="status g">Pass</span></span></div>
+
+      <div class="verdict" role="group" aria-label="Your verdict">
+        <button data-v="go">▲ Go</button>
+        <button data-v="cond">◆ Conditional go</button>
+        <button data-v="nogo">■ No-go</button>
+      </div>
+      <div class="reasoning">
+        <label for="verdictWhy">Your committee's reasoning &amp; any conditions</label>
+        <textarea id="verdictWhy" class="txt" rows="3" placeholder="What tips your call? What single fix would change it?"></textarea>
+      </div>
+    </div>
+
+    <div class="callout discuss"><span class="lab">Debrief · whole class · 4 min</span>
+      Hands up: GO, CONDITIONAL, or NO-GO? Expect disagreement — that's the point. FreshFarm's entire problem is weekend crashes, yet the load test hit only 8× of a 10× target. Does that one red light outweigh five acceptable ones? What condition would turn your NO-GO into a GO?</div>
+  </section>
+
+  <!-- ===================== SUBMIT / SELF-CHECK ===================== -->
+  <section id="submit">
+    <div class="submit-panel">
+      <span class="lab">Self-check</span>
+      <h3>Finished all three rounds?</h3>
+      <p>Submit your work to reveal the model answers and see how your reasoning compares. You can keep editing and re-checking afterwards.</p>
+      <button id="submitBtn" class="btn-submit">Submit my answers &rarr;</button>
+      <div id="submitSummary" class="submit-summary" hidden></div>
+    </div>
+  </section>
+
+  <!-- ===================== ANSWER KEY ===================== -->
+  <section id="answers">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span> Instructor</div>
+      <h2>Facilitator guide &amp; model answers</h2>
+    </div>
+    <div class="instructor-bar">
+      <div class="txt"><b>Instructor copy.</b> Hidden by default so you can project this page in class — students also reveal it by pressing <b>Submit</b> above. Model answers, not the only answers: reward defensible reasoning over matching them exactly.</div>
+      <button class="btn-reveal" id="revealBtn" aria-expanded="false" aria-controls="answerKey">Reveal model answers</button>
+    </div>
+
+    <div id="answerKey">
+      <div class="ans-block">
+        <h3>Round 1 — model R for each system</h3>
+        <table class="tbl">
+          <thead><tr><th class="center" style="width:36px">#</th><th style="width:180px">System</th><th style="width:150px">Model R</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td class="center">1</td><td>Customer ordering app</td><td class="r-badge">Refactor</td><td>The crown jewel and the source of the pain. Rebuild cloud-native so it auto-scales for weekend peaks.</td></tr>
+            <tr><td class="center">2</td><td>In-house email server</td><td class="r-badge">Repurchase</td><td>No reason to self-run mail. Move to Google Workspace / Microsoft 365 (SaaS).</td></tr>
+            <tr><td class="center">3</td><td>Delivery-driver tracking</td><td class="r-badge">Rehost / Replatform</td><td>Works fine; lift &amp; shift now (low risk), optimise later. Replatform if a managed DB is easy.</td></tr>
+            <tr><td class="center">4</td><td>Accounting software</td><td class="r-badge">Repurchase</td><td>A modern finance SaaS is cheaper and remote-friendly. (Retain briefly if mid-contract.)</td></tr>
+            <tr><td class="center">5</td><td>Analytics &amp; reports</td><td class="r-badge">Replatform / Refactor</td><td>Move to a managed analytics service to end the fragile manual process.</td></tr>
+            <tr><td class="center">6</td><td>Legacy SMS gateway</td><td class="r-badge">Retire</td><td>Superseded by in-app notifications. Switch off — instant saving. The easy win teams overlook.</td></tr>
+            <tr><td class="center">7</td><td>Customer database</td><td class="r-badge">Replatform</td><td>Move to a managed database in an Indian region; encrypt &amp; log for DPDP compliance.</td></tr>
+          </tbody>
+        </table>
+        <div class="teach"><b>Teaching point:</b> a single migration uses many R's at once, and sequencing them is the roadmap — quick wins (retire the SMS gateway, repurchase email) build momentum and budget for the hard refactor.</div>
+      </div>
+
+      <div class="ans-block">
+        <h3>Round 2 — worked solution</h3>
+        <table class="tbl">
+          <thead><tr><th>Metric</th><th>Working</th><th class="center">Answer</th></tr></thead>
+          <tbody>
+            <tr><td>On-premise 3-yr TCO</td><td class="num">60 + (3 × 75)</td><td class="num"><b>₹285 L</b></td></tr>
+            <tr><td>Cloud 3-yr TCO</td><td class="num">35 + (3 × 61)</td><td class="num"><b>₹218 L</b></td></tr>
+            <tr><td>3-year saving</td><td class="num">285 − 218</td><td class="num"><b>₹67 L</b></td></tr>
+            <tr><td>Gross benefit (excl. migration)</td><td class="num">285 − 183</td><td class="num">₹102 L</td></tr>
+            <tr><td>ROI over 3 years</td><td class="num">67 ÷ 35</td><td class="num">≈ 191%</td></tr>
+            <tr><td>Payback (operating only)</td><td class="num">35 ÷ 14 / yr</td><td class="num">≈ 2.5 yr</td></tr>
+            <tr><td>Payback (incl. avoided ₹60 L refresh)</td><td class="num">Year-1 benefit ≈ 74</td><td class="num">&lt; 6 months</td></tr>
+          </tbody>
+        </table>
+        <div class="teach"><b>Teaching points:</b> (1) cloud isn't automatically cheaper — here it wins on ~24% lower 3-year TCO plus the avoided hardware refresh. (2) The two payback numbers show how framing changes the story; the honest pitch presents both. (3) The biggest intangibles — ending weekend crashes and faster city launches — drive revenue, not just cost, and belong in the case even if hard to price.</div>
+      </div>
+
+      <div class="ans-block">
+        <h3>Round 3 — facilitating the decision</h3>
+        <p><b>Part A:</b> Strong answers spot that the design nails <b>reliability &amp; performance</b> (auto-scaling, load balancer) and <b>security</b> (Indian region, encryption, logging), but may under-address <b>cost</b> (auto-scaling can cause bill shock — ask about budgets/alerts) and <b>operations</b> (who monitors it 24×7 in a lean team?).</p>
+        <p><b>Part B:</b> There is no official answer — run it as a real board would. The tension: five results are acceptable, but the load test (8× vs a 10× target) fails the very risk FreshFarm exists to fix. Most rigorous teams land on <b>CONDITIONAL GO</b>: fix the 0.02% data mismatch and the medium security issue, and re-run the load test to 10× before launch; a defensible <b>NO-GO</b> until 10× is proven is equally valid. A plain GO ignoring the load gap is the weakest answer — surface why.</p>
+        <div class="your-call">Your committee's call: <b id="yourCall">not yet submitted</b> — how does it hold up against the reasoning above?</div>
+        <div class="teach"><b>Link back to the lecture:</b> this is exactly why criteria are agreed BEFORE testing (so the call is objective), why you pilot in one city first, and why a tested rollback plan makes a brave decision safe.</div>
+      </div>
+
+      <div class="ans-block">
+        <h3>Debrief questions (pick 2–3)</h3>
+        <ul class="clean">
+          <li>Which round changed your mind about whether FreshFarm should migrate — and why?</li>
+          <li>Where did hard numbers decide it, and where did judgement have to take over?</li>
+          <li>If the board could fund only ONE round's recommendation first, which delivers the most value fastest?</li>
+          <li>What would you tell FreshFarm's IT staff, who fear the migration threatens their jobs?</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== GLOSSARY ===================== -->
+  <section id="glossary">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span> Reference</div>
+      <h2>Quick glossary</h2>
+    </div>
+    <dl class="gloss">
+      <dt>CapEx / OpEx</dt><dd>A large up-front purchase vs. a flexible pay-as-you-go monthly cost.</dd>
+      <dt>IaaS / PaaS / SaaS</dt><dd>Renting servers / renting a ready platform / logging into ready-made software.</dd>
+      <dt>Public / Private / Hybrid</dt><dd>Shared provider infrastructure / dedicated to one firm / a mix of both.</dd>
+      <dt>Hyperscaler</dt><dd>A giant cloud provider — AWS, Microsoft Azure, Google Cloud.</dd>
+      <dt>Elasticity / Auto-scaling</dt><dd>Capacity that grows and shrinks automatically with demand.</dd>
+      <dt>TCO</dt><dd>Total Cost of Ownership — every cost over a period, not just the sticker price.</dd>
+      <dt>ROI / Payback</dt><dd>Return on investment / time to recover the money spent.</dd>
+      <dt>The 6 R's</dt><dd>Rehost, Replatform, Repurchase, Refactor, Retire, Retain.</dd>
+      <dt>PoC / Pilot</dt><dd>A small throwaway test / a limited real launch to one region or user group.</dd>
+      <dt>UAT</dt><dd>User Acceptance Testing — real users confirm real tasks work end-to-end.</dd>
+      <dt>Go / No-Go</dt><dd>The evidence-based decision to launch, launch with fixes, or hold.</dd>
+      <dt>Rollback</dt><dd>A tested plan to revert to the old system if the launch fails.</dd>
+      <dt>Data residency</dt><dd>The rule about which country your data must physically sit in.</dd>
+      <dt>DPDP Act</dt><dd>India's Digital Personal Data Protection Act (2023) governing personal data.</dd>
+      <dt>FinOps</dt><dd>Ongoing discipline of watching and optimising the cloud bill.</dd>
+    </dl>
+    <div class="formula">Saving = on-premise TCO − cloud TCO &nbsp;·&nbsp; ROI = 3-year saving ÷ migration cost &nbsp;·&nbsp; Payback = migration cost ÷ annual saving</div>
+  </section>
+
+  <footer class="pg">
+    <span>MBA Program — Technology &amp; Operations Management</span>
+    <span class="mono">The Migration Playground · 60-minute activity</span>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- scroll progress ---------- */
+  var prog = document.getElementById('progress');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    prog.style.width = (max>0 ? (h.scrollTop/max*100) : 0) + '%';
+  }
+  document.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* ---------- Round 1: build worksheet rows ---------- */
+  var systems = [
+    "Customer ordering app","In-house email server","Delivery-driver tracking",
+    "Accounting software","Analytics & reports","Legacy SMS gateway","Customer database"
+  ];
+  var Rs = ["Rehost","Replatform","Repurchase","Refactor","Retire","Retain"];
+  var tbody = document.querySelector('#r1table tbody');
+  systems.forEach(function(sys, i){
+    var tr = document.createElement('tr');
+    var opts = '<option value="">— choose —</option>' + Rs.map(function(r){return '<option>'+r+'</option>';}).join('');
+    tr.innerHTML =
+      '<td class="center">'+(i+1)+'</td>'+
+      '<td>'+sys+'</td>'+
+      '<td><select class="r-select" aria-label="Chosen R for '+sys+'">'+opts+'</select></td>'+
+      '<td><input class="txt" type="text" aria-label="Reason for '+sys+'" placeholder="One-line reason…"></td>';
+    tbody.appendChild(tr);
+  });
+  var countEl = document.getElementById('assignCount');
+  tbody.addEventListener('change', function(e){
+    if(e.target.classList.contains('r-select')){
+      e.target.closest('td').classList.toggle('assigned', !!e.target.value);
+      var n = Array.prototype.filter.call(tbody.querySelectorAll('.r-select'), function(s){return s.value;}).length;
+      countEl.textContent = n;
+    }
+  });
+
+  /* ---------- Round 2: TCO calculator ---------- */
+  var defaults = {op_hw:60,op_colo:18,op_lic:12,op_staff:24,op_dr:6,op_down:15,
+                  cl_mig:35,cl_use:42,cl_lic:4,cl_staff:12,cl_dr:2,cl_down:1};
+  var ids = Object.keys(defaults);
+  function val(id){ var v = parseFloat(document.getElementById(id).value); return isFinite(v)&&v>=0 ? v : 0; }
+  function L(n){ return '₹' + (Math.round(n*10)/10).toLocaleString('en-IN') + ' L'; }
+
+  function flash(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+
+  function compute(){
+    var opAnnual = val('op_colo')+val('op_lic')+val('op_staff')+val('op_dr')+val('op_down');
+    var opOne = val('op_hw');
+    var clAnnual = val('cl_use')+val('cl_lic')+val('cl_staff')+val('cl_dr')+val('cl_down');
+    var clOne = val('cl_mig');
+    var opTCO = opOne + 3*opAnnual;
+    var clTCO = clOne + 3*clAnnual;
+    var saving = opTCO - clTCO;
+    var pct = opTCO>0 ? (saving/opTCO*100) : 0;
+    var roi = clOne>0 ? (saving/clOne*100) : 0;
+    var annualSaving = opAnnual - clAnnual;
+    var pb1 = annualSaving>0 ? (clOne/annualSaving) : null;          // years
+    var y1benefit = annualSaving + opOne;                            // avoided refresh + operating saving
+    var pb2months = y1benefit>0 ? (clOne/y1benefit*12) : null;       // months
+
+    document.getElementById('op_annual').textContent = L(opAnnual);
+    document.getElementById('cl_annual').textContent = L(clAnnual);
+    document.getElementById('op_tco').textContent = L(opTCO);
+    document.getElementById('cl_tco').textContent = L(clTCO);
+
+    setStat('r_saving', saving>=0? L(saving) : '−'+L(-saving), 'r_saving');
+    setStat('r_pct', (pct>=0?'':'−') + Math.abs(Math.round(pct)) + '%');
+    setStat('r_roi', clOne>0 ? Math.round(roi)+'%' : '—');
+    setStat('r_pb1', pb1!==null ? (Math.round(pb1*10)/10)+' yr' : 'none');
+    document.getElementById('r_y1').textContent = L(y1benefit);
+    document.getElementById('r_pb2').textContent = pb2months!==null
+        ? '~'+ (pb2months<1 ? '<1' : Math.round(pb2months)) +' month'+(Math.round(pb2months)===1?'':'s')
+        : 'none';
+
+    // colour the saving/pct/roi stats by sign
+    ['r_saving','r_pct','r_roi'].forEach(function(id){
+      document.getElementById(id).closest('.stat').classList.toggle('good', saving>=0);
+    });
+
+    // comparison bars (scale to the larger TCO)
+    var maxT = Math.max(opTCO, clTCO, 1);
+    var barOp = document.getElementById('bar_op'), barCl = document.getElementById('bar_cl');
+    barOp.style.width = (opTCO/maxT*100)+'%'; barOp.textContent = L(opTCO);
+    barCl.style.width = (clTCO/maxT*100)+'%'; barCl.textContent = L(clTCO);
+  }
+  function setStat(id, text){
+    var el = document.getElementById(id);
+    if(el.textContent !== text){ el.textContent = text; flash(el); }
+  }
+
+  ids.forEach(function(id){ document.getElementById(id).addEventListener('input', compute); });
+  document.getElementById('resetCalc').addEventListener('click', function(){
+    ids.forEach(function(id){ document.getElementById(id).value = defaults[id]; });
+    compute();
+  });
+  compute();
+
+  /* ---------- Round 3: verdict buttons ---------- */
+  var vbtns = document.querySelectorAll('.verdict button');
+  var VLABEL = {go:'GO', cond:'CONDITIONAL GO', nogo:'NO-GO'};
+  vbtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      vbtns.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed','false'); });
+      b.classList.add('on'); b.setAttribute('aria-pressed','true');
+    });
+  });
+  function currentVerdict(){
+    var on = document.querySelector('.verdict button.on');
+    return on ? VLABEL[on.getAttribute('data-v')] : null;
+  }
+
+  /* ---------- Answer key reveal (shared by instructor + submit) ---------- */
+  var revealBtn = document.getElementById('revealBtn');
+  var key = document.getElementById('answerKey');
+  function showAnswers(scroll){
+    key.classList.add('shown');
+    revealBtn.textContent = 'Hide model answers';
+    revealBtn.setAttribute('aria-expanded','true');
+    if(scroll){ document.getElementById('answers').scrollIntoView({behavior:'smooth', block:'start'}); }
+  }
+  function hideAnswers(){
+    key.classList.remove('shown');
+    revealBtn.textContent = 'Reveal model answers';
+    revealBtn.setAttribute('aria-expanded','false');
+  }
+  revealBtn.addEventListener('click', function(){
+    if(key.classList.contains('shown')) hideAnswers(); else showAnswers(true);
+  });
+
+  /* ---------- Student submit / self-check ---------- */
+  var submitBtn = document.getElementById('submitBtn');
+  var submitSummary = document.getElementById('submitSummary');
+  submitBtn.addEventListener('click', function(){
+    var assigned = Array.prototype.filter.call(
+        document.querySelectorAll('#r1table .r-select'), function(s){ return s.value; }).length;
+    var verdict = currentVerdict();
+
+    // gentle completeness nudge — informs but never blocks
+    if(assigned < 7 || !verdict){
+      var msg = 'Before you reveal the model answers:\n';
+      if(assigned < 7) msg += '\u2022 Round 1: ' + assigned + ' of 7 systems assigned.\n';
+      if(!verdict)     msg += '\u2022 Round 3: no go / no-go verdict cast yet.\n';
+      msg += '\nReveal the answers anyway?';
+      if(!window.confirm(msg)) return;
+    }
+
+    var saving = document.getElementById('r_saving').textContent;
+    document.getElementById('yourCall').textContent = verdict || 'not cast';
+
+    submitSummary.hidden = false;
+    submitSummary.innerHTML =
+      '<b>Submitted.</b> Round 1 &mdash; ' + assigned + '/7 systems assigned &nbsp;\u00b7&nbsp; ' +
+      'Round 2 &mdash; 3-year saving ' + saving + ' &nbsp;\u00b7&nbsp; ' +
+      'Round 3 &mdash; your call: <b>' + (verdict || '\u2014') + '</b>. ' +
+      '<a href="#answers">Compare with the model answers &darr;</a>';
+
+    submitBtn.textContent = 'Submitted \u2713 \u2014 answers revealed below';
+    submitBtn.classList.add('done');
+    showAnswers(false);
+    document.getElementById('answers').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  /* ---------- active nav highlight ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav a'));
+  var map = {};
+  links.forEach(function(a){ var id=a.getAttribute('href').slice(1); var s=document.getElementById(id); if(s) map[id]=a; });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        links.forEach(function(a){ a.style.color=''; a.style.background=''; });
+        var a = map[en.target.id];
+        if(a){ a.style.color='#fff'; a.style.background='rgba(6,195,154,.18)'; }
+      }
+    });
+  }, {rootMargin:'-45% 0px -50% 0px'});
+  Object.keys(map).forEach(function(id){ obs.observe(document.getElementById(id)); });
+
+})();
+</script>
+</body>
+</html>
