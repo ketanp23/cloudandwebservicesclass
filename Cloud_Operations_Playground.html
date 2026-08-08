@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Cloud Operations Playground — Session 2 Activity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B2A38; --ink-2:#0F3B4E; --deep:#065A82; --teal:#1C7293;
+    --signal:#06C39A; --signal-dk:#049B7C; --amber:#E9A317; --coral:#E0574A;
+    --paper:#EEF4F7; --card:#FFFFFF; --line:#CDDDE5; --line-2:#E3EDF1;
+    --muted:#5A7686; --text:#123141;
+    --serif:'Spectral', Georgia, 'Times New Roman', serif;
+    --sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+    --maxw:920px;
+    --shadow:0 1px 2px rgba(11,42,56,.04), 0 8px 24px -12px rgba(11,42,56,.22);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--paper); color:var(--text); font-family:var(--sans); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  ::selection{background:var(--signal); color:var(--ink);}
+  #progress{position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg,var(--signal),var(--teal)); z-index:60; transition:width .1s linear;}
+
+  .site-header{position:sticky; top:0; z-index:50; background:rgba(11,42,56,.94); backdrop-filter:blur(8px); border-bottom:1px solid rgba(255,255,255,.08);}
+  .nav{max-width:var(--maxw); margin:0 auto; padding:.6rem 1.3rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;}
+  .nav .brand{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--signal); font-weight:600; white-space:nowrap;}
+  .nav .brand b{color:#fff; font-weight:600;}
+  .nav ul{display:flex; gap:.15rem; list-style:none; margin:0; padding:0; flex-wrap:wrap;}
+  .nav a{font-size:.82rem; color:#B9D2DE; text-decoration:none; padding:.3rem .55rem; border-radius:6px; font-weight:500; white-space:nowrap;}
+  .nav a:hover{background:rgba(255,255,255,.09); color:#fff;}
+  .nav .spacer{flex:1}
+  .btn-print{font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); background:var(--signal); border:none; padding:.45rem .8rem; border-radius:7px; font-weight:600; cursor:pointer;}
+  .btn-print:hover{background:#fff;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:0 1.3rem 5rem;}
+  section{scroll-margin-top:70px;}
+
+  .hero{background:radial-gradient(1100px 380px at 82% -8%, rgba(6,195,154,.16), transparent 60%), radial-gradient(760px 320px at 8% 0%, rgba(28,114,147,.28), transparent 55%), var(--ink); color:#EAF2F5; margin:0 -1.3rem; padding:3.4rem 1.3rem 2.6rem; border-radius:0 0 20px 20px;}
+  .eyebrow{font-family:var(--mono); font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--signal); font-weight:600; display:flex; align-items:center; gap:.55rem;}
+  .eyebrow .dot{width:8px; height:8px; border-radius:50%; background:var(--signal); box-shadow:0 0 0 0 rgba(6,195,154,.6); animation:pulse 2.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(6,195,154,.55)}70%{box-shadow:0 0 0 9px rgba(6,195,154,0)}100%{box-shadow:0 0 0 0 rgba(6,195,154,0)}}
+  .hero h1{font-family:var(--serif); font-weight:800; font-size:clamp(2.4rem,5.6vw,3.8rem); line-height:1.03; margin:.9rem 0 .5rem; letter-spacing:-.01em; color:#fff;}
+  .hero .lede{font-size:clamp(1.05rem,2.2vw,1.3rem); color:#C4DAE3; max-width:46ch; font-weight:400; font-family:var(--serif); font-style:italic;}
+  .brief{margin-top:1.9rem; background:rgba(255,255,255,.05); border:1px solid rgba(6,195,154,.35); border-radius:14px; padding:1.25rem 1.4rem;}
+  .brief .tag{font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--signal); font-weight:600;}
+  .brief h2{font-family:var(--serif); font-size:1.5rem; margin:.35rem 0 .5rem; color:#fff; font-weight:700;}
+  .brief p{margin:0; color:#CFE1E9; font-size:1rem;}
+
+  .launch{display:grid; grid-template-columns:repeat(4,1fr); gap:.7rem; margin-top:1.4rem;}
+  .launch a{position:relative; text-decoration:none; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:1rem 1rem 1.05rem; color:#EAF2F5; transition:transform .15s ease, border-color .15s ease, background .15s ease;}
+  .launch a:hover{transform:translateY(-3px); border-color:var(--signal); background:rgba(6,195,154,.08);}
+  .launch .n{font-family:var(--mono); font-size:.72rem; letter-spacing:.12em; color:var(--signal); font-weight:600;}
+  .launch .t{font-family:var(--serif); font-weight:600; font-size:1.08rem; margin:.25rem 0 .2rem; color:#fff;}
+  .launch .d{font-size:.82rem; color:#AEC8D3;}
+  .launch .time{position:absolute; top:.85rem; right:.9rem; font-family:var(--mono); font-size:.68rem; color:#8FB0BD;}
+
+  .sec-head{margin:3.4rem 0 1.3rem;}
+  .sec-eyebrow{font-family:var(--mono); font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--teal); font-weight:600; display:flex; align-items:center; gap:.5rem;}
+  .sec-eyebrow .sq{width:9px; height:9px; background:var(--teal); border-radius:2px;}
+  .sec-head h2{font-family:var(--serif); font-weight:700; font-size:clamp(1.7rem,3.6vw,2.35rem); margin:.45rem 0 .2rem; color:var(--ink); letter-spacing:-.01em; line-height:1.1;}
+  .sec-head p.sub{margin:.1rem 0 0; color:var(--muted); font-size:1.02rem; max-width:62ch;}
+
+  h3{font-family:var(--serif); font-weight:600; font-size:1.28rem; color:var(--ink); margin:2rem 0 .6rem;}
+  h4{font-family:var(--sans); font-weight:700; font-size:1rem; color:var(--deep); margin:1.4rem 0 .4rem;}
+  p{margin:.55rem 0;}
+
+  .card{background:var(--card); border:1px solid var(--line-2); border-radius:14px; padding:1.4rem 1.5rem; box-shadow:var(--shadow); margin:1.1rem 0;}
+  .callout{border-radius:12px; padding:1.05rem 1.25rem; margin:1.1rem 0; border:1px solid var(--line); background:#F4F9FB;}
+  .callout .lab{font-family:var(--mono); font-size:.68rem; letter-spacing:.13em; text-transform:uppercase; font-weight:600; color:var(--deep); display:block; margin-bottom:.3rem;}
+  .callout.task{background:linear-gradient(180deg,#F0FaF7,#F3F9FB); border-color:rgba(6,195,154,.4);}
+  .callout.task .lab{color:var(--signal-dk);}
+  .callout.discuss{background:#FDF6E7; border-color:#F0D89A;}
+  .callout.discuss .lab{color:#B07C10;}
+  .callout p{margin:.2rem 0;}
+
+  .tbl{width:100%; border-collapse:separate; border-spacing:0; margin:1rem 0; font-size:.94rem; border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .tbl thead th{background:var(--ink); color:#fff; text-align:left; padding:.62rem .85rem; font-weight:600; font-size:.82rem;}
+  .tbl td{padding:.6rem .85rem; border-top:1px solid var(--line-2); vertical-align:top;}
+  .tbl tbody tr:nth-child(even){background:#F5FaFC;}
+  .tbl td.center,.tbl th.center{text-align:center;}
+  .tbl td.num{font-family:var(--mono); text-align:right; white-space:nowrap;}
+  .tbl .strat{font-weight:700; color:var(--deep);}
+  .r-badge{font-family:var(--mono); font-weight:600; font-size:.8rem; color:var(--deep);}
+
+  .assign-meter{font-family:var(--mono); font-size:.8rem; color:var(--muted); margin:.2rem 0 .8rem;}
+  .assign-meter b{color:var(--signal-dk);}
+  select.r-select, input.txt, textarea.txt{font-family:var(--sans); font-size:.9rem; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:.42rem .55rem; width:100%; background:#fff;}
+  select.r-select:focus, input.txt:focus, textarea.txt:focus, input.num-in:focus{outline:2px solid var(--signal); outline-offset:1px; border-color:var(--signal);}
+  select.r-select{background:#F8FBFC url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23065A82' stroke-width='1.6'/></svg>") no-repeat right .55rem center; -webkit-appearance:none; appearance:none; padding-right:1.7rem;}
+  .assigned select.r-select{border-color:var(--signal); background-color:#EFFbF7;}
+  textarea.txt{resize:vertical; min-height:2.4rem;}
+
+  /* guardrail chips */
+  .guardrails{display:flex; flex-wrap:wrap; gap:.55rem; margin:.6rem 0 .2rem;}
+  .guardrails label{display:inline-flex; align-items:center; gap:.45rem; font-size:.86rem; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:.4rem .8rem; cursor:pointer; user-select:none;}
+  .guardrails input{accent-color:var(--signal); width:15px; height:15px;}
+  .guardrails label:hover{border-color:var(--signal);}
+
+  /* storage calculator */
+  .calc-col{background:var(--card); border:1px solid var(--line-2); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); margin:1.1rem 0;}
+  .calc-col header{padding:.85rem 1.1rem; color:#fff; font-family:var(--serif); font-weight:600; font-size:1.1rem; background:linear-gradient(100deg,var(--deep),var(--teal)); display:flex; justify-content:space-between; align-items:baseline;}
+  .calc-col header .cap{font-family:var(--mono); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; opacity:.85; font-weight:500;}
+  .tier-row{display:grid; grid-template-columns:150px 1fr 96px; gap:.7rem; align-items:center; padding:.65rem 1.1rem; border-top:1px solid var(--line-2);}
+  .tier-row:first-of-type{border-top:none;}
+  .tier-name{display:flex; align-items:center; gap:.5rem; font-weight:600; font-size:.92rem; color:var(--text);}
+  .tier-name i{width:11px; height:11px; border-radius:3px;}
+  .tier-name.hot i{background:var(--signal);} .tier-name.cool i{background:var(--teal);} .tier-name.arch i{background:var(--deep);}
+  .tier-meta{font-family:var(--mono); font-size:.72rem; color:var(--muted);}
+  .tier-in{display:flex; align-items:center; gap:4px; justify-content:flex-end; font-family:var(--mono);}
+  input.num-in{font-family:var(--mono); font-size:.9rem; width:60px; text-align:right; border:1px solid var(--line); border-radius:6px; padding:.28rem .35rem; background:#fff; -moz-appearance:textfield;}
+  input.num-in::-webkit-outer-spin-button, input.num-in::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+  .tier-in span{color:var(--muted); font-size:.78rem;}
+  .alloc-bar{padding:.6rem 1.1rem; border-top:2px solid var(--line); background:#F5FaFC; display:flex; justify-content:space-between; align-items:center; font-size:.86rem;}
+  .alloc-bar .v{font-family:var(--mono); font-weight:600;}
+  .alloc-ok{color:var(--signal-dk);} .alloc-bad{color:var(--coral);}
+  .total-row{display:flex; align-items:center; gap:.6rem; padding:.7rem 1.1rem; border-top:1px solid var(--line-2); font-size:.9rem;}
+  .total-row label{flex:1; font-weight:600;}
+
+  .results{background:var(--ink); color:#EAF2F5; border-radius:14px; padding:1.3rem 1.4rem; margin-top:1.1rem; box-shadow:var(--shadow);}
+  .results-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem;}
+  .results-head .t{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--signal);}
+  .btn-reset{font-family:var(--mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; background:transparent; border:1px solid rgba(255,255,255,.25); color:#CFE1E9; padding:.35rem .6rem; border-radius:6px;}
+  .btn-reset:hover{border-color:var(--signal); color:#fff;}
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem;}
+  .stat{background:rgba(255,255,255,.05); border-radius:10px; padding:.8rem .85rem;}
+  .stat .k{font-family:var(--mono); font-size:.6rem; letter-spacing:.06em; text-transform:uppercase; color:#9CBBC7;}
+  .stat .val{font-family:var(--mono); font-weight:600; font-size:1.4rem; margin-top:.2rem; color:#fff; transition:color .2s;}
+  .stat.good .val{color:var(--signal);}
+  .stat .val.flash{animation:flash .5s ease;}
+  @keyframes flash{0%{background:rgba(6,195,154,.35)}100%{background:transparent}}
+  .cmp-bar{margin-top:1.1rem;}
+  .cmp-bar .row{display:flex; align-items:center; gap:.7rem; margin:.4rem 0; font-size:.82rem;}
+  .cmp-bar .rl{width:120px; font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:#B9D2DE;}
+  .cmp-bar .track{flex:1; background:rgba(255,255,255,.07); border-radius:6px; height:22px; overflow:hidden;}
+  .cmp-bar .fill{height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:.5rem; font-family:var(--mono); font-size:.72rem; color:#fff; transition:width .35s ease; white-space:nowrap;}
+  .cmp-bar .fill.base{background:linear-gradient(90deg,#c06a4b,#E0574A);}
+  .cmp-bar .fill.mix{background:linear-gradient(90deg,var(--teal),var(--signal));}
+
+  /* security console */
+  .console{background:var(--ink); border-radius:16px; padding:1.4rem 1.5rem; color:#EAF2F5; box-shadow:var(--shadow); margin:1.1rem 0;}
+  .console .chead{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--signal); margin-bottom:.9rem; display:flex; align-items:center; gap:.5rem;}
+  .crit{display:grid; grid-template-columns:22px 1fr 1fr; gap:.8rem; align-items:center; padding:.6rem 0; border-top:1px solid rgba(255,255,255,.09);}
+  .crit:first-of-type{border-top:none;}
+  .light{width:15px; height:15px; border-radius:50%; box-shadow:0 0 8px 0 currentColor; margin-left:3px;}
+  .light.g{background:var(--signal); color:rgba(6,195,154,.7);}
+  .light.a{background:var(--amber); color:rgba(233,163,23,.6);}
+  .light.r{background:var(--coral); color:rgba(224,87,74,.6);}
+  .crit .cr{font-size:.86rem; color:#CFE1E9;} .crit .cr b{color:#fff; font-weight:600;}
+  .crit .rs{font-size:.86rem; color:#EAF2F5;}
+  .crit .rs .status{font-family:var(--mono); font-size:.6rem; letter-spacing:.05em; text-transform:uppercase; display:inline-block; padding:.1rem .4rem; border-radius:4px; margin-left:.35rem; vertical-align:middle;}
+  .status.g{background:rgba(6,195,154,.18); color:var(--signal);}
+  .status.a{background:rgba(233,163,23,.18); color:var(--amber);}
+  .status.r{background:rgba(224,87,74,.2); color:#F3A69D;}
+  .verdict{display:flex; gap:.7rem; margin:1.3rem 0 .7rem; flex-wrap:wrap;}
+  .verdict button{flex:1; min-width:150px; font-family:var(--mono); font-size:.78rem; letter-spacing:.05em; text-transform:uppercase; font-weight:600; padding:.8rem .6rem; border-radius:10px; cursor:pointer; background:rgba(255,255,255,.05); color:#CFE1E9; border:1.5px solid rgba(255,255,255,.18); transition:all .15s;}
+  .verdict button:hover{border-color:currentColor;}
+  .verdict button[data-v="approve"]:hover, .verdict button[data-v="approve"].on{background:rgba(6,195,154,.16); border-color:var(--signal); color:var(--signal);}
+  .verdict button[data-v="cond"]:hover, .verdict button[data-v="cond"].on{background:rgba(233,163,23,.16); border-color:var(--amber); color:var(--amber);}
+  .verdict button[data-v="block"]:hover, .verdict button[data-v="block"].on{background:rgba(224,87,74,.16); border-color:var(--coral); color:#F3A69D;}
+  .verdict button.on{box-shadow:0 0 0 3px rgba(255,255,255,.06);}
+
+  /* CAF readiness rating */
+  .caf-grid{display:flex; flex-direction:column; gap:.7rem; margin:1.1rem 0;}
+  .caf-row{background:var(--card); border:1px solid var(--line-2); border-radius:12px; padding:.85rem 1rem; box-shadow:var(--shadow);}
+  .caf-row .cr-head{display:flex; align-items:baseline; gap:.5rem; flex-wrap:wrap;}
+  .caf-row .cr-name{font-family:var(--sans); font-weight:700; color:var(--deep); font-size:.98rem;}
+  .caf-row .cr-q{font-size:.82rem; color:var(--muted);}
+  .caf-row .cr-state{font-size:.88rem; color:var(--text); margin:.3rem 0 .55rem;}
+  .rate{display:flex; gap:.4rem; flex-wrap:wrap;}
+  .rate button{font-family:var(--mono); font-size:.66rem; letter-spacing:.03em; text-transform:uppercase; font-weight:600; padding:.38rem .62rem; border-radius:7px; cursor:pointer; background:#F4F9FB; color:var(--muted); border:1.5px solid var(--line);}
+  .rate button:hover{border-color:var(--teal); color:var(--deep);}
+  .rate button.on{background:var(--deep); color:#fff; border-color:var(--deep);}
+  .caf-verdict{margin-top:1rem; font-family:var(--serif); font-size:1.15rem; color:#fff; background:rgba(255,255,255,.05); border-radius:10px; padding:.75rem 1rem; border-left:3px solid rgba(255,255,255,.25);}
+  .caf-verdict.notready{border-color:var(--coral);} .caf-verdict.pilot{border-color:var(--amber);} .caf-verdict.scale{border-color:var(--signal);}
+  .caf-gap-line{margin-top:.7rem; font-size:.9rem; color:#CFE1E9;} .caf-gap-line b{color:var(--amber);}
+  .reasoning label{font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:#9CBBC7; display:block; margin-bottom:.3rem;}
+  .reasoning textarea{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); color:#EAF2F5;}
+  .reasoning textarea:focus{outline:2px solid var(--signal);}
+
+  ul.clean{margin:.5rem 0; padding-left:1.15rem;}
+  ul.clean li{margin:.32rem 0;} ul.clean li::marker{color:var(--teal);}
+  .primer-note{font-size:.92rem; color:var(--muted); font-style:italic; margin:.3rem 0;}
+
+  .submit-panel{background:linear-gradient(160deg,#0F3B4E,#0B2A38); color:#EAF2F5; border-radius:16px; padding:1.9rem 1.6rem; text-align:center; box-shadow:var(--shadow); border:1px solid rgba(6,195,154,.32); margin:1.1rem 0;}
+  .submit-panel .lab{font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--signal);}
+  .submit-panel h3{font-family:var(--serif); color:#fff; margin:.45rem 0 .35rem; font-size:1.55rem;}
+  .submit-panel p{color:#C4DAE3; margin:.2rem auto .95rem; max-width:54ch; font-size:.98rem;}
+  .btn-submit{font-family:var(--mono); font-size:.82rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600; background:var(--signal); color:var(--ink); border:none; padding:.85rem 1.7rem; border-radius:10px; cursor:pointer; transition:transform .12s ease, background .15s ease;}
+  .btn-submit:hover{transform:translateY(-2px); background:#fff;}
+  .btn-submit:focus-visible{outline:2px solid #fff; outline-offset:3px;}
+  .btn-submit.done{background:var(--signal-dk); color:#fff; cursor:default; transform:none;}
+  .submit-summary{margin-top:1.1rem; font-size:.9rem; color:#CFE1E9; background:rgba(6,195,154,.1); border:1px solid rgba(6,195,154,.3); border-radius:10px; padding:.75rem 1rem; text-align:left;}
+  .submit-summary b{color:#fff;} .submit-summary a{color:var(--signal); font-weight:600; text-decoration:none;} .submit-summary a:hover{text-decoration:underline;}
+  .your-call{background:#FDF6E7; border:1px solid #F0D89A; border-radius:8px; padding:.5rem .8rem; font-size:.9rem; margin:.6rem 0 .2rem;} .your-call b{color:#B07C10;}
+
+  .instructor-bar{display:flex; align-items:center; gap:1rem; flex-wrap:wrap; background:#FbEEEC; border:1px solid #F0C4BE; border-radius:12px; padding:1rem 1.25rem; margin:1.1rem 0;}
+  .instructor-bar .txt{flex:1; min-width:220px; font-size:.92rem; color:#8A3A30;} .instructor-bar .txt b{color:#6E2A22;}
+  .btn-reveal{font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; background:var(--coral); color:#fff; border:none; padding:.55rem 1rem; border-radius:8px; font-weight:600;}
+  .btn-reveal:hover{background:#C9463A;}
+  #answerKey{display:none;} #answerKey.shown{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+  .ans-block{border-left:3px solid var(--signal); padding-left:1rem; margin:1.4rem 0;}
+  .teach{background:#EFF6F9; border-radius:9px; padding:.7rem .9rem; font-size:.9rem; margin:.7rem 0;} .teach b{color:var(--teal);}
+
+  dl.gloss{display:grid; grid-template-columns:auto 1fr; gap:.1rem 1.1rem; margin:1rem 0;}
+  dl.gloss dt{font-weight:700; color:var(--deep); padding:.4rem 0; border-top:1px solid var(--line-2); font-size:.92rem;}
+  dl.gloss dd{margin:0; padding:.4rem 0; border-top:1px solid var(--line-2); color:var(--text); font-size:.92rem;}
+  dl.gloss dt:first-of-type, dl.gloss dd:first-of-type{border-top:none;}
+  .formula{font-family:var(--mono); font-size:.82rem; color:var(--muted); text-align:center; margin-top:1rem; background:#F4F9FB; border:1px dashed var(--line); border-radius:8px; padding:.7rem;}
+
+  footer.pg{margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--line); color:var(--muted); font-size:.82rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem;}
+  footer .mono{font-family:var(--mono); font-size:.72rem; letter-spacing:.06em;}
+
+  @media (max-width:720px){
+    .launch, .stat-row{grid-template-columns:1fr;} .stat-row{grid-template-columns:1fr 1fr;}
+    .nav ul{display:none;}
+    .crit{grid-template-columns:22px 1fr;} .crit .rs{grid-column:2;}
+    .tier-row{grid-template-columns:120px 1fr 80px;}
+    dl.gloss{grid-template-columns:1fr;} dl.gloss dd{border-top:none; padding-top:0;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important; scroll-behavior:auto !important;} }
+
+  @media print{
+    :root{--maxw:100%;}
+    body{background:#fff; font-size:11pt;}
+    #progress,.site-header,.btn-print,.btn-reset,.btn-reveal,.launch .time,.submit-panel{display:none !important;}
+    .hero{margin:0; border-radius:0; color:#000; background:#fff; padding:.4in 0; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .hero h1,.brief h2,.hero .lede,.brief p,.brief .tag,.eyebrow{color:#000 !important;}
+    .hero,.results,.console,.calc-col header,.tbl thead th{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .sec-head{page-break-after:avoid;} .card,.callout,.calc-col,.results,.console{page-break-inside:avoid;}
+    a{color:inherit; text-decoration:none;}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<header class="site-header">
+  <nav class="nav" aria-label="Section navigation">
+    <span class="brand"><b>Cloud Ops</b> Playground</span>
+    <div class="spacer"></div>
+    <ul>
+      <li><a href="#brief">Brief</a></li>
+      <li><a href="#runsheet">Run-sheet</a></li>
+      <li><a href="#primer">Primer</a></li>
+      <li><a href="#caf">CAF</a></li>
+      <li><a href="#round1">Hybrid</a></li>
+      <li><a href="#round2">Storage</a></li>
+      <li><a href="#round3">Security</a></li>
+      <li><a href="#submit">Submit</a></li>
+      <li><a href="#answers">Answers</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+    </ul>
+    <button class="btn-print" onclick="window.print()">Print / PDF</button>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="brief">
+    <div class="eyebrow"><span class="dot"></span> Hands-on activity · Session 2 · ~65 minutes</div>
+    <h1>The Cloud Operations<br>Playground</h1>
+    <p class="lede">Blueprint a hybrid estate, optimise a storage bill, and sign off a secure go-live — as the cloud steering committee.</p>
+    <div class="brief">
+      <span class="tag">Mission brief · the company you'll work with</span>
+      <h2>MediTrust Diagnostics</h2>
+      <p>A fast-growing health-tech company: 80 diagnostic labs across India, a busy telehealth app for video consultations, and mountains of medical imaging (X-rays, MRIs, scans). Some lab systems must stay on-site, patient data is strictly regulated, and the storage bill is climbing fast. The board wants a plan to run all of this well — hybrid, secure, and cost-aware.</p>
+    </div>
+    <div class="launch">
+      <a href="#caf"><span class="time">12 min</span><div class="n">Round 01</div><div class="t">CAF Readiness</div><div class="d">Rate maturity; find the priority gap</div></a>
+      <a href="#round1"><span class="time">16 min</span><div class="n">Round 02</div><div class="t">Hybrid Blueprint</div><div class="d">Place each system: cloud, hybrid, on-prem</div></a>
+      <a href="#round2"><span class="time">16 min</span><div class="n">Round 03</div><div class="t">Storage Optimiser</div><div class="d">Tier the imaging data; cut the bill live</div></a>
+      <a href="#round3"><span class="time">16 min</span><div class="n">Round 04</div><div class="t">Security Go-Live</div><div class="d">Review the posture; approve or block</div></a>
+    </div>
+  </section>
+
+  <!-- RUN-SHEET -->
+  <section id="runsheet">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Facilitator</div>
+      <h2>The run-sheet (~65 min)</h2>
+      <p class="sub">Suggested timing. Keep rounds tight — the debrief is where the learning lands. Teams of 4–5 work best.</p></div>
+    <table class="tbl">
+      <thead><tr><th>Time</th><th>Segment</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>0–4 min</td><td><b>Set-up</b></td><td>Form teams, read the MediTrust brief aloud</td></tr>
+        <tr><td>4–16</td><td><b>Round 1 — CAF readiness</b></td><td>Rate the six perspectives; find the priority gap</td></tr>
+        <tr><td>16–32</td><td><b>Round 2 — Hybrid blueprint</b></td><td>Place each system; agree governance guardrails</td></tr>
+        <tr><td>32–46</td><td><b>Round 3 — Storage optimiser</b></td><td>Allocate imaging data across tiers; read the saving</td></tr>
+        <tr><td>46–58</td><td><b>Round 4 — Security go-live</b></td><td>Review the security console; approve, condition or block</td></tr>
+        <tr><td>58–65</td><td><b>Debrief</b></td><td>Vote on the go-live; connect back to the lecture</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><span class="lab">Materials each team needs</span>
+      This page (or a printout) · a calculator (or just use the built-in one) · the Session 2 lecture as reference (framework &amp; hybrid → scaling → security → storage). Every decision here is a management judgement — no cloud accounts required.</div>
+  </section>
+
+  <!-- PRIMER -->
+  <section id="primer">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Reference</div>
+      <h2>Reading primer</h2>
+      <p class="sub">A five-minute refresher on the ideas you'll use. Skim it now; come back to any part during the rounds.</p></div>
+
+    <h3>1 · Cloud Adoption Framework (CAF)</h3>
+    <p>A company-wide playbook that turns "we use cloud" into a governed programme. Read it as a lifecycle — <b>Strategy → Plan → Ready → Adopt → Govern → Manage</b> — and remember it's mostly about people and governance, not technology. "Ready" builds a <b>landing zone</b>: a pre-secured, pre-governed plot of cloud with the rules baked in before any workload lands.</p>
+
+    <h3>2 · Hybrid environments</h3>
+    <p>Running some systems in the cloud and some in your own data centre, joined by a secure link so it behaves as one. Companies stay hybrid on purpose — for regulation, legacy systems, latency (things that must be physically close), and data gravity (data too big to move). The hard part is keeping <b>one identity</b> and <b>one view</b> across both sides.</p>
+
+    <h3>3 · Scaling &amp; multi-environment</h3>
+    <ul class="clean">
+      <li><b>Scale up</b> (bigger server) vs <b>scale out</b> (more servers). Web tiers scale out; databases are the usual bottleneck.</li>
+      <li><b>Auto-scaling</b> matches capacity to demand — pay for the shape of demand, not the peak. Always set min/max limits and budget alerts.</li>
+      <li><b>Environments:</b> Dev → Test → Staging → Production. Never build straight into production — a change earns its way up.</li>
+    </ul>
+
+    <h3>4 · Security &amp; communications</h3>
+    <ul class="clean">
+      <li><b>Shared responsibility:</b> the provider secures the cloud; you secure what's in it. Most breaches are on the customer side.</li>
+      <li><b>Identity:</b> least privilege + MFA + roles, not shared logins.</li>
+      <li><b>Data:</b> encrypt at rest (a locked safe) and in transit (an armoured van / the HTTPS padlock).</li>
+      <li><b>Network:</b> a private network (VPC), only a public front door, firewalls, and segmentation so a breach can't spread.</li>
+      <li><b>Prove it:</b> logging, monitoring, and compliance (India's DPDP Act, health-data rules).</li>
+    </ul>
+
+    <h3>5 · Storage — options, tiers &amp; management</h3>
+    <ul class="clean">
+      <li><b>Types:</b> object (warehouse of labelled boxes — files, images, backups), block (a hard-drive for one server — databases), file (a shared network drive).</li>
+      <li><b>Tiers:</b> hot (frequent, dearest) → cool (infrequent) → archive (rare, cheapest, slow to retrieve). Tiering is the biggest storage-cost lever.</li>
+      <li><b>Manage:</b> lifecycle rules auto-move ageing data to cheaper tiers; watch <b>egress</b> (getting data out can cost more than storing it); tag everything for cost control.</li>
+    </ul>
+
+    <h3>6 · Real-world anchors</h3>
+    <p class="primer-note">Concrete examples you can bring into the debate — all widely reported:</p>
+    <ul class="clean">
+      <li><b>Hybrid — banks &amp; Zerodha:</b> banks keep the core banking ledger on-prem for regulation and stability while apps and analytics run in cloud. India's largest broker, Zerodha, deliberately self-manages latency-sensitive systems rather than defaulting everything to cloud — "cloud-first" isn't "cloud-only".</li>
+      <li><b>Scaling — Hotstar &amp; Flipkart:</b> Disney+ Hotstar has streamed IPL cricket to tens of millions of concurrent viewers (among the highest ever recorded); Flipkart's "Big Billion Days" drives 10–50× normal traffic. Both <b>pre-scale and rehearse for weeks</b> — they don't rely on auto-scaling alone.</li>
+      <li><b>Security — Capital One (2019):</b> a misconfiguration exposed personal data of ~100 million people. The provider wasn't hacked; the <b>customer's configuration</b> failed. This is the shared-responsibility lesson in one headline — and exactly the kind of slip you're checking for in Round 3.</li>
+      <li><b>Storage — Dropbox:</b> at enormous scale, Dropbox built its own storage and moved most data off public cloud, reportedly saving ~$75M over two years. Cloud is usually cheaper to start — but at huge scale, storage economics can flip. Keep measuring.</li>
+    </ul>
+  </section>
+
+  <!-- ROUND 1 -->
+  <!-- ROUND 1 · CAF READINESS -->
+  <section id="caf">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Round 01 · CAF Readiness Assessment · 12 min</div>
+      <h2>Is MediTrust even ready? Rate it first.</h2>
+      <p class="sub">A Cloud Adoption Framework doesn't start with servers — it starts by assessing readiness across six perspectives. Rate MediTrust's maturity in each. The lowest score is where the work begins; you don't scale on a weak foundation.</p></div>
+    <div class="callout task"><span class="lab">Your task</span>
+      For each of the six CAF perspectives, read MediTrust's current state and rate its maturity: <b>Ad-hoc</b> (1), <b>Developing</b> (2), <b>Defined</b> (3) or <b>Optimised</b> (4). The tool computes an average, names the priority gap, and gives a readiness verdict.</div>
+
+    <div class="assign-meter">Rated <b><span id="cafCount">0</span>/6</b> perspectives</div>
+    <div class="caf-grid" id="cafGrid"></div>
+
+    <div class="results">
+      <div class="results-head"><span class="t">◆ Readiness, computed</span>
+        <button class="btn-reset" id="cafReset">↺ Clear ratings</button></div>
+      <div class="stat-row" style="grid-template-columns:1fr 1fr;">
+        <div class="stat"><div class="k">Average maturity</div><div class="val" id="caf_avg">— / 4</div></div>
+        <div class="stat"><div class="k">Perspectives rated</div><div class="val" id="caf_rated">0 / 6</div></div>
+      </div>
+      <div class="caf-verdict" id="caf_verdict">Rate all six perspectives to see MediTrust's readiness.</div>
+      <div class="caf-gap-line">Priority gap: <b id="caf_gap">—</b></div>
+    </div>
+
+    <div class="callout discuss"><span class="lab">Share-out · 2 min</span>
+      Most teams score <b>People</b> and <b>Governance</b> lowest — that's the "cloud is ~70% people &amp; governance" lesson in action. What one thing would you fix first? And which perspective does building a good <b>landing zone</b> improve all at once?</div>
+  </section>
+
+  <!-- ROUND 2 · HYBRID -->
+  <section id="round1">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Round 02 · Hybrid Estate Blueprint · 16 min</div>
+      <h2>Place each system: cloud, hybrid or on-prem</h2></div>
+    <div class="callout task"><span class="lab">Your task</span>
+      You are MediTrust's cloud steering committee. For <b>each</b> system, decide whether it belongs in the <b>cloud</b>, in a <b>hybrid</b> setup (part cloud, part on-site), or should <b>stay on-prem</b> — and give a one-line reason. Then pick the governance guardrails you'd make mandatory across the estate.</div>
+
+    <h4>MediTrust's systems</h4>
+    <table class="tbl">
+      <thead><tr><th class="center" style="width:36px">#</th><th style="width:210px">System</th><th>What it does &amp; its constraints</th></tr></thead>
+      <tbody>
+        <tr><td class="center">1</td><td><b>Telehealth video app</b></td><td>Patient video consultations. Demand spikes mornings &amp; evenings.</td></tr>
+        <tr><td class="center">2</td><td><b>Lab diagnostic machines</b></td><td>Physical analysers &amp; their local controllers, one set per lab. Must run even if internet drops.</td></tr>
+        <tr><td class="center">3</td><td><b>Patient records database</b></td><td>Highly sensitive personal health data. Governed by India's DPDP &amp; health rules.</td></tr>
+        <tr><td class="center">4</td><td><b>Medical imaging store</b></td><td>Hundreds of terabytes of scans; recent ones viewed often, old ones rarely.</td></tr>
+        <tr><td class="center">5</td><td><b>Hospital partner integrations</b></td><td>Connects to partner hospitals, some of whose systems are on-site only.</td></tr>
+        <tr><td class="center">6</td><td><b>Billing &amp; HR</b></td><td>Standard back-office admin. Nothing unusual.</td></tr>
+        <tr><td class="center">7</td><td><b>Legacy reporting server</b></td><td>A 9-year-old on-prem reporting tool. Clunky but still used weekly.</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Your worksheet — place each system</h4>
+    <div class="assign-meter">Placed <b><span id="assignCount">0</span>/7</b></div>
+    <table class="tbl" id="r1table">
+      <thead><tr><th class="center" style="width:36px">#</th><th style="width:190px">System</th><th style="width:150px">Placement</th><th>One-line reason</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <h4>Governance guardrails — pick the ones you'd make mandatory</h4>
+    <div class="guardrails" id="guardrails">
+      <label><input type="checkbox"> Encryption on by default</label>
+      <label><input type="checkbox"> MFA for every user</label>
+      <label><input type="checkbox"> Consistent tagging</label>
+      <label><input type="checkbox"> Data kept in Indian regions</label>
+      <label><input type="checkbox"> Budget alerts on every account</label>
+      <label><input type="checkbox"> Least-privilege access</label>
+      <label><input type="checkbox"> Central logging &amp; monitoring</label>
+    </div>
+
+    <div class="callout discuss"><span class="lab">Share-out · 2 min</span>
+      Which system split your team? Sensitive patient data can technically live in the cloud (encrypted, in an Indian region) — did you trust that, or keep it hybrid? Why?</div>
+  </section>
+
+  <!-- ROUND 2 -->
+  <section id="round2">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Round 03 · Storage Cost Optimiser · 16 min</div>
+      <h2>Tier the imaging data — cut the bill live</h2>
+      <p class="sub">MediTrust holds <b>240 TB</b> of medical images. Right now it's <b>all in the hot tier</b> — instant access, but expensive. Move data into cheaper tiers based on how often it's really viewed, and watch the monthly bill fall. All figures are illustrative ₹.</p></div>
+
+    <div class="calc-col">
+      <header>Imaging storage — allocate 240 TB across tiers <span class="cap">₹ / GB / month</span></header>
+      <div class="total-row"><label>Total imaging data</label>
+        <span class="tier-in"><input class="num-in" id="total_tb" type="number" value="240" min="0"><span>TB</span></span></div>
+      <div class="tier-row">
+        <span class="tier-name hot"><i></i>Hot</span>
+        <span class="tier-meta">viewed often · ₹1.80/GB · recent scans (~3 months)</span>
+        <span class="tier-in"><input class="num-in" id="hot_tb" type="number" value="240" min="0"><span>TB</span></span></div>
+      <div class="tier-row">
+        <span class="tier-name cool"><i></i>Cool</span>
+        <span class="tier-meta">viewed rarely · ₹0.90/GB · this year's older scans</span>
+        <span class="tier-in"><input class="num-in" id="cool_tb" type="number" value="0" min="0"><span>TB</span></span></div>
+      <div class="tier-row">
+        <span class="tier-name arch"><i></i>Archive</span>
+        <span class="tier-meta">almost never · ₹0.15/GB · retrieval takes hours</span>
+        <span class="tier-in"><input class="num-in" id="arch_tb" type="number" value="0" min="0"><span>TB</span></span></div>
+      <div class="alloc-bar"><span>Allocated across tiers</span><span class="v" id="allocMsg">240 / 240 TB</span></div>
+    </div>
+
+    <div class="results">
+      <div class="results-head"><span class="t">◆ The bill, computed</span>
+        <button class="btn-reset" id="resetCalc">↺ Reset to all-hot</button></div>
+      <div class="stat-row">
+        <div class="stat"><div class="k">Monthly cost</div><div class="val" id="r_month">₹4.32 L</div></div>
+        <div class="stat"><div class="k">Annual cost</div><div class="val" id="r_year">₹51.84 L</div></div>
+        <div class="stat good"><div class="k">Annual saving vs all-hot</div><div class="val" id="r_save">₹0</div></div>
+        <div class="stat good"><div class="k">Bill cut by</div><div class="val" id="r_pct">0%</div></div>
+      </div>
+      <div class="cmp-bar">
+        <div class="row"><span class="rl">All-hot (today)</span><div class="track"><div class="fill base" id="bar_base" style="width:100%">₹4.32 L/mo</div></div></div>
+        <div class="row"><span class="rl">Your tiering</span><div class="track"><div class="fill mix" id="bar_mix" style="width:100%">₹4.32 L/mo</div></div></div>
+      </div>
+      <p style="margin:1rem 0 0; font-size:.88rem; color:#B9D2DE;">Careful: <b style="color:#fff;">archive is slow to retrieve</b> (hours) and may charge a retrieval fee — never archive scans a doctor might need instantly. Match the tier to how the data is actually used.</p>
+    </div>
+
+    <div class="callout discuss"><span class="lab">Discussion · 2 min</span>
+      A radiologist says "I might need any scan at any time — keep it all hot." How do you respond as the person who owns the budget? What policy (by scan age) would you set?</div>
+  </section>
+
+  <!-- ROUND 3 -->
+  <section id="round3">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Round 04 · Security Go-Live Console · 16 min</div>
+      <h2>Review the posture, then make the call</h2></div>
+    <div class="callout task"><span class="lab">Your task</span>
+      MediTrust is one week from launching its telehealth app to the public. The security team's pre-launch review is below, checked against the standards <b>agreed in advance</b>. Read the status lights, spot the dealbreaker, and cast your committee's decision: <b>Approve</b>, <b>Approve with conditions</b>, or <b>Block</b>.</div>
+
+    <div class="console">
+      <div class="chead">◆ Pre-launch security review · telehealth app</div>
+      <div class="crit"><span class="light g"></span><span class="cr"><b>Encryption.</b> Target: at rest &amp; in transit</span><span class="rs">All patient data encrypted <span class="status g">Pass</span></span></div>
+      <div class="crit"><span class="light r"></span><span class="cr"><b>Storage exposure.</b> Target: no public access</span><span class="rs">A scan-images bucket is public to the internet <span class="status r">Critical</span></span></div>
+      <div class="crit"><span class="light a"></span><span class="cr"><b>Access &amp; MFA.</b> Target: MFA for all staff</span><span class="rs">90% enrolled; 10% still pending <span class="status a">Partial</span></span></div>
+      <div class="crit"><span class="light g"></span><span class="cr"><b>Network.</b> Target: database not internet-facing</span><span class="rs">DB on a private subnet <span class="status g">Pass</span></span></div>
+      <div class="crit"><span class="light a"></span><span class="cr"><b>Compliance.</b> Target: DPDP sign-off</span><span class="rs">Legal review still pending <span class="status a">Pending</span></span></div>
+      <div class="crit"><span class="light g"></span><span class="cr"><b>Logging &amp; backup.</b> Target: on &amp; tested</span><span class="rs">Audit logs on; restore tested <span class="status g">Pass</span></span></div>
+
+      <div class="verdict" role="group" aria-label="Your verdict">
+        <button data-v="approve">▲ Approve</button>
+        <button data-v="cond">◆ Approve with conditions</button>
+        <button data-v="block">■ Block</button>
+      </div>
+      <div class="reasoning">
+        <label for="verdictWhy">Your committee's reasoning &amp; any conditions</label>
+        <textarea id="verdictWhy" class="txt" rows="3" placeholder="Which light decides it? What must be fixed before launch, and what can follow after?"></textarea>
+      </div>
+    </div>
+
+    <div class="callout discuss"><span class="lab">Debrief · whole class · 4 min</span>
+      Hands up: Approve, Conditions, or Block? One red light here is a <b>public bucket of patient scans</b> — a privacy breach waiting to happen and a likely DPDP violation. Does a single misconfiguration outweigh five good results? Which fixes are blockers, and which can follow go-live?</div>
+  </section>
+
+  <!-- SUBMIT -->
+  <section id="submit">
+    <div class="submit-panel">
+      <span class="lab">Self-check</span>
+      <h3>Finished all three rounds?</h3>
+      <p>Submit your work to reveal the model answers and see how your reasoning compares. You can keep editing and re-checking afterwards.</p>
+      <button id="submitBtn" class="btn-submit">Submit my answers &rarr;</button>
+      <div id="submitSummary" class="submit-summary" hidden></div>
+    </div>
+  </section>
+
+  <!-- ANSWER KEY -->
+  <section id="answers">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Instructor</div>
+      <h2>Facilitator guide &amp; model answers</h2></div>
+    <div class="instructor-bar">
+      <div class="txt"><b>Instructor copy.</b> Hidden by default so you can project this page in class — students also reveal it by pressing <b>Submit</b> above. Model answers, not the only answers: reward defensible reasoning over matching them exactly.</div>
+      <button class="btn-reveal" id="revealBtn" aria-expanded="false" aria-controls="answerKey">Reveal model answers</button>
+    </div>
+
+    <div id="answerKey">
+      <div class="ans-block">
+        <h3>Round 1 — reading the CAF readiness</h3>
+        <table class="tbl">
+          <thead><tr><th style="width:130px">Perspective</th><th class="center" style="width:110px">Model rating</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td class="strat">Business</td><td class="center">Ad-hoc / Developing</td><td>Growth ambition exists, but no cloud business case or funding model — write one first.</td></tr>
+            <tr><td class="strat">People</td><td class="center">Ad-hoc</td><td>Only two cloud engineers and anxious staff. This is usually the weakest — and hardest — gap.</td></tr>
+            <tr><td class="strat">Governance</td><td class="center">Ad-hoc</td><td>No tagging, no budget alerts, case-by-case compliance. Fix in a landing zone.</td></tr>
+            <tr><td class="strat">Platform</td><td class="center">Developing</td><td>Some cloud use but no landing zone or standard guardrails.</td></tr>
+            <tr><td class="strat">Security</td><td class="center">Developing</td><td>Encryption on, but a public bucket and partial MFA drag it down (see Round 4).</td></tr>
+            <tr><td class="strat">Operations</td><td class="center">Developing</td><td>Strong for labs, patchy for cloud services.</td></tr>
+          </tbody>
+        </table>
+        <div class="teach"><b>Teaching point:</b> the average lands around <b>2/4 — "not ready to scale, pilot only."</b> The lowest scores are almost always <b>People and Governance</b>, which is the "~70% of cloud is people &amp; governance" rule in action. The powerful insight: building a <b>landing zone</b> lifts Platform, Governance and Security at once (guardrails, tagging, budgets, encryption baked in) — so it's the highest-leverage first move. There's no single "right" set of ratings; reward teams who justify their scores and name a sensible first step.</div>
+      </div>
+
+      <div class="ans-block">
+        <h3>Round 2 — model placement for each system</h3>
+        <table class="tbl">
+          <thead><tr><th class="center" style="width:36px">#</th><th style="width:180px">System</th><th style="width:120px">Model</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td class="center">1</td><td>Telehealth video app</td><td class="r-badge">Cloud</td><td>Spiky demand needs elastic scale-out and global reach — the classic cloud fit.</td></tr>
+            <tr><td class="center">2</td><td>Lab diagnostic machines</td><td class="r-badge">On-prem</td><td>Physical analysers with local controllers must run on-site, even offline. Latency &amp; hardware keep them local.</td></tr>
+            <tr><td class="center">3</td><td>Patient records database</td><td class="r-badge">Cloud / Hybrid</td><td>Cloud is fine <i>if</i> in an Indian region, encrypted, least-privilege and DPDP-compliant. Keep hybrid only if policy demands a local copy.</td></tr>
+            <tr><td class="center">4</td><td>Medical imaging store</td><td class="r-badge">Cloud</td><td>Object storage with tiering (see Round 2) — cheap, huge, and scales. Don't run a storage farm in every lab.</td></tr>
+            <tr><td class="center">5</td><td>Hospital partner integrations</td><td class="r-badge">Hybrid</td><td>Must reach partner systems that are on-site only — a hybrid link is unavoidable.</td></tr>
+            <tr><td class="center">6</td><td>Billing &amp; HR</td><td class="r-badge">Cloud</td><td>Standard back-office — move to SaaS and stop self-running it.</td></tr>
+            <tr><td class="center">7</td><td>Legacy reporting server</td><td class="r-badge">On-prem / Hybrid</td><td>Leave it for now (retain), connect via hybrid, and replatform later — not worth the risk to move first.</td></tr>
+          </tbody>
+        </table>
+        <div class="teach"><b>Teaching point:</b> a real estate is a mix — cloud for elastic apps, on-prem for physical &amp; latency-bound systems, hybrid to bridge the two. This mirrors how <b>banks</b> keep core banking on-prem while apps run in cloud, and how <b>hospitals</b> keep imaging on-site but run patient portals in cloud. Sensitive data <i>can</i> go to cloud with the right controls; the debate about #3 is the whole lesson. Good guardrails to mandate: encryption on, MFA for all, Indian-region data, least-privilege, tagging, budget alerts, central logging.</div>
+      </div>
+
+      <div class="ans-block">
+        <h3>Round 3 — a sensible tiering, and the saving</h3>
+        <p>Allocate by how often scans are actually viewed — roughly by age:</p>
+        <table class="tbl">
+          <thead><tr><th>Tier</th><th>Rule of thumb</th><th class="center">TB</th><th class="num">Monthly cost</th></tr></thead>
+          <tbody>
+            <tr><td class="strat">Hot</td><td>Recent ~3 months, viewed often</td><td class="center">40</td><td class="num">₹0.72 L</td></tr>
+            <tr><td class="strat">Cool</td><td>Rest of this year, viewed rarely</td><td class="center">80</td><td class="num">₹0.72 L</td></tr>
+            <tr><td class="strat">Archive</td><td>Older, kept for compliance</td><td class="center">120</td><td class="num">₹0.18 L</td></tr>
+            <tr><td><b>Total</b></td><td></td><td class="center"><b>240</b></td><td class="num"><b>₹1.62 L</b></td></tr>
+          </tbody>
+        </table>
+        <div class="teach"><b>Result:</b> ~₹1.62 L/month vs ₹4.32 L/month all-hot — about <b>₹32 L saved per year (~63%)</b>, for the same data. <b>Teaching points:</b> (1) tiering is the biggest storage lever; (2) archive is slow/charged to retrieve, so never archive data needed instantly — set the policy by scan age, with lifecycle rules doing the moving automatically; (3) watch egress separately — moving images out to partners can cost more than storing them.</div>
+      </div>
+
+      <div class="ans-block">
+        <h3>Round 4 — facilitating the decision</h3>
+        <p>The model call is <b>Block</b> (or a very firm <b>Approve-with-conditions</b> that treats the bucket as a hard gate). The public scan-images bucket is a live patient-privacy breach and a likely DPDP violation — it must be closed before any launch. The two ambers (MFA at 90%, DPDP sign-off pending) are real but can be conditions with deadlines; the three greens are genuinely fine.</p>
+        <div class="your-call">Your committee's call: <b id="yourCall">not yet submitted</b> — how does it hold up against the reasoning above?</div>
+        <div class="teach"><b>Link back to the lecture:</b> this is the shared-responsibility model in action — the provider secured the cloud, but a customer misconfiguration (a public bucket) is the classic breach. This is almost exactly what happened to <b>Capital One in 2019</b>, where a misconfiguration exposed ~100 million people's data — the provider wasn't hacked; the customer's config failed. A plain Approve that ignores the red light is the weakest answer. Note too: the fix here is trivial (make the bucket private); the damage if missed is enormous.</div>
+      </div>
+
+      <div class="ans-block">
+        <h3>Debrief questions (pick 2–3)</h3>
+        <ul class="clean">
+          <li>Where did you keep something on-prem or hybrid that a pure-cloud purist would have moved — and were you right?</li>
+          <li>The storage saving was ~62% for the <i>same</i> data. Why do so many companies still leave everything hot?</li>
+          <li>One misconfiguration nearly shipped a breach. What process would stop that reaching a go-live at all?</li>
+          <li>Which of today's four areas — framework/hybrid, scaling, security, storage — is hardest to get right, and why?</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section id="glossary">
+    <div class="sec-head"><div class="sec-eyebrow"><span class="sq"></span> Reference</div>
+      <h2>Quick glossary</h2></div>
+    <dl class="gloss">
+      <dt>CAF</dt><dd>Cloud Adoption Framework — a governed, company-wide playbook for using cloud well.</dd>
+      <dt>Landing zone</dt><dd>A pre-secured, pre-governed area of cloud, set up before workloads move in.</dd>
+      <dt>Hybrid</dt><dd>Running some systems on-prem and some in cloud, joined securely as one.</dd>
+      <dt>Scale up / out</dt><dd>Make one server bigger vs. add more servers to share the load.</dd>
+      <dt>Auto-scaling</dt><dd>Capacity that grows and shrinks automatically with demand.</dd>
+      <dt>Environments</dt><dd>Separate copies — Dev, Test, Staging, Production — so changes are proven before going live.</dd>
+      <dt>Shared responsibility</dt><dd>Provider secures the cloud; you secure what you put in it.</dd>
+      <dt>IAM / least privilege</dt><dd>Identity &amp; access management; grant the minimum access needed, no more.</dd>
+      <dt>MFA</dt><dd>Multi-factor authentication — a password plus a second proof.</dd>
+      <dt>Encryption at rest / in transit</dt><dd>Scrambling stored data / data moving over the network.</dd>
+      <dt>VPC</dt><dd>Your own private, walled-off network inside the cloud.</dd>
+      <dt>Object / block / file</dt><dd>Storage for files &amp; images / server disks / shared network drives.</dd>
+      <dt>Hot / cool / archive</dt><dd>Storage tiers from frequent-and-dear to rare-cheap-and-slow.</dd>
+      <dt>Lifecycle rule</dt><dd>Automatic policy that moves ageing data to cheaper tiers.</dd>
+      <dt>Egress</dt><dd>Data-transfer-out fees — getting data out can cost more than storing it.</dd>
+      <dt>DPDP Act</dt><dd>India's Digital Personal Data Protection Act (2023) governing personal data.</dd>
+    </dl>
+    <div class="formula">Storage cost = Σ (TB × 1000 × ₹/GB) per tier &nbsp;·&nbsp; Saving = all-hot cost − your tiered cost &nbsp;·&nbsp; match tier to access frequency</div>
+  </section>
+
+  <footer class="pg">
+    <span>MBA Program — Technology &amp; Operations Management</span>
+    <span class="mono">Cloud Operations Playground · Session 2 · four-round activity</span>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var prog=document.getElementById('progress');
+  function onScroll(){ var h=document.documentElement, max=h.scrollHeight-h.clientHeight; prog.style.width=(max>0?(h.scrollTop/max*100):0)+'%'; }
+  document.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* ---- Round 1: CAF readiness assessment ---- */
+  var CAF=[
+    ["Business","Cloud tied to clear goals & funding?","Board wants growth, but there's no cloud business case or funding model yet."],
+    ["People","Cloud skills & a change plan?","World-class clinicians; only two cloud engineers; staff are anxious about the change."],
+    ["Governance","Cost, risk & compliance controlled?","No tagging, no budget alerts; compliance is handled case-by-case."],
+    ["Platform","A secure cloud foundation?","Some cloud use, but no landing zone or standard guardrails."],
+    ["Security","Data protected end-to-end?","Encryption is on, but a storage bucket is public and MFA is only 90% rolled out."],
+    ["Operations","Can we monitor & run cloud services?","24×7 monitoring for the labs; cloud monitoring is patchy."]
+  ];
+  var LEVELS=["Ad-hoc","Developing","Defined","Optimised"];
+  var cafRatings={};
+  var cafGrid=document.getElementById('cafGrid');
+  CAF.forEach(function(p,i){
+    var row=document.createElement('div'); row.className='caf-row';
+    var btns=LEVELS.map(function(l,j){return '<button type="button" data-p="'+i+'" data-v="'+(j+1)+'" aria-label="'+p[0]+': '+l+'">'+l+'</button>';}).join('');
+    row.innerHTML='<div class="cr-head"><span class="cr-name">'+p[0]+'</span><span class="cr-q">'+p[1]+'</span></div>'+
+      '<div class="cr-state">'+p[2]+'</div><div class="rate">'+btns+'</div>';
+    cafGrid.appendChild(row);
+  });
+  function cafCompute(){
+    var keys=Object.keys(cafRatings), n=keys.length;
+    document.getElementById('cafCount').textContent=n;
+    document.getElementById('caf_rated').textContent=n+' / 6';
+    var avgEl=document.getElementById('caf_avg'), vEl=document.getElementById('caf_verdict'), gEl=document.getElementById('caf_gap');
+    if(n===0){ avgEl.textContent='— / 4'; }
+    else { var partial=keys.reduce(function(s,k){return s+cafRatings[k];},0)/n; avgEl.textContent=(Math.round(partial*10)/10)+' / 4'; }
+    if(n<6){ vEl.textContent='Rate all six perspectives to see MediTrust\u2019s readiness.'; vEl.className='caf-verdict'; gEl.textContent='\u2014'; return; }
+    var avg=CAF.reduce(function(s,_,i){return s+cafRatings[i];},0)/6;
+    avgEl.textContent=(Math.round(avg*10)/10)+' / 4';
+    var min=Math.min.apply(null,CAF.map(function(_,i){return cafRatings[i];}));
+    var gaps=CAF.filter(function(_,i){return cafRatings[i]===min;}).map(function(p){return p[0];});
+    gEl.innerHTML=gaps.join(', ')+' <span style="color:#9CBBC7">(scored '+min+'/4)</span>';
+    if(avg<2.5){ vEl.textContent='Not ready to scale — close the gaps first, pilot only.'; vEl.className='caf-verdict notready'; }
+    else if(avg<3.5){ vEl.textContent='Ready to pilot — start small and keep closing gaps.'; vEl.className='caf-verdict pilot'; }
+    else { vEl.textContent='Ready to scale — a strong foundation across the board.'; vEl.className='caf-verdict scale'; }
+  }
+  cafGrid.addEventListener('click',function(e){
+    var b=e.target.closest('.rate button'); if(!b) return;
+    b.parentNode.querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed','false'); });
+    b.classList.add('on'); b.setAttribute('aria-pressed','true');
+    cafRatings[b.getAttribute('data-p')]=parseInt(b.getAttribute('data-v'),10);
+    cafCompute();
+  });
+  document.getElementById('cafReset').addEventListener('click',function(){
+    cafRatings={}; cafGrid.querySelectorAll('.rate button').forEach(function(x){ x.classList.remove('on'); }); cafCompute();
+  });
+  function cafSummary(){
+    var n=Object.keys(cafRatings).length; if(n<6) return {rated:n, txt:n+'/6 rated'};
+    var avg=CAF.reduce(function(s,_,i){return s+cafRatings[i];},0)/6;
+    var min=Math.min.apply(null,CAF.map(function(_,i){return cafRatings[i];}));
+    var gaps=CAF.filter(function(_,i){return cafRatings[i]===min;}).map(function(p){return p[0];});
+    return {rated:n, txt:'avg '+(Math.round(avg*10)/10)+'/4, gap: '+gaps.join(' & ')};
+  }
+  cafCompute();
+
+  /* ---- Round 1: build placement rows ---- */
+  var systems=["Telehealth video app","Lab diagnostic machines","Patient records database","Medical imaging store","Hospital partner integrations","Billing & HR","Legacy reporting server"];
+  var PLACE=["Cloud","Hybrid","On-prem"];
+  var tbody=document.querySelector('#r1table tbody');
+  systems.forEach(function(sys,i){
+    var tr=document.createElement('tr');
+    var opts='<option value="">— choose —</option>'+PLACE.map(function(p){return '<option>'+p+'</option>';}).join('');
+    tr.innerHTML='<td class="center">'+(i+1)+'</td><td>'+sys+'</td>'+
+      '<td><select class="r-select" aria-label="Placement for '+sys+'">'+opts+'</select></td>'+
+      '<td><input class="txt" type="text" aria-label="Reason for '+sys+'" placeholder="One-line reason…"></td>';
+    tbody.appendChild(tr);
+  });
+  var countEl=document.getElementById('assignCount');
+  tbody.addEventListener('change',function(e){
+    if(e.target.classList.contains('r-select')){
+      e.target.closest('td').classList.toggle('assigned', !!e.target.value);
+      countEl.textContent=Array.prototype.filter.call(tbody.querySelectorAll('.r-select'),function(s){return s.value;}).length;
+    }
+  });
+
+  /* ---- Round 2: storage tier calculator ---- */
+  var RATE={hot:1.80, cool:0.90, arch:0.15}; // ₹ per GB per month
+  var GB=1000; // per TB
+  var defaults={total_tb:240, hot_tb:240, cool_tb:0, arch_tb:0};
+  var ids=Object.keys(defaults);
+  function val(id){ var v=parseFloat(document.getElementById(id).value); return isFinite(v)&&v>=0?v:0; }
+  function L(rupees){
+    var a=Math.abs(rupees), s=rupees<0?'−':'';
+    if(a>=1e7) return s+'₹'+(a/1e7).toFixed(2)+' Cr';
+    return s+'₹'+(a/1e5).toFixed(2)+' L';
+  }
+  function flash(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+  function setStat(id,text){ var el=document.getElementById(id); if(el.textContent!==text){ el.textContent=text; flash(el);} }
+
+  function compute(){
+    var total=val('total_tb'), hot=val('hot_tb'), cool=val('cool_tb'), arch=val('arch_tb');
+    var allocated=hot+cool+arch;
+    var monthly=(hot*GB*RATE.hot)+(cool*GB*RATE.cool)+(arch*GB*RATE.arch);
+    var annual=monthly*12;
+    var baseMonthly=total*GB*RATE.hot;             // all-hot baseline on total
+    var saveMonthly=baseMonthly-monthly;
+    var saveAnnual=saveMonthly*12;
+    var pct=baseMonthly>0?(saveMonthly/baseMonthly*100):0;
+
+    setStat('r_month', L(monthly));
+    setStat('r_year', L(annual));
+    setStat('r_save', L(saveAnnual));
+    setStat('r_pct', (pct<0?'−':'')+Math.abs(Math.round(pct))+'%');
+    ['r_save','r_pct'].forEach(function(id){ document.getElementById(id).closest('.stat').classList.toggle('good', saveMonthly>=0); });
+
+    // allocation meter
+    var msg=document.getElementById('allocMsg');
+    msg.textContent=allocated+' / '+total+' TB';
+    msg.className='v '+(Math.abs(allocated-total)<0.001?'alloc-ok':'alloc-bad');
+
+    // comparison bars scaled to baseline
+    var maxV=Math.max(baseMonthly, monthly, 1);
+    var b=document.getElementById('bar_base'), m=document.getElementById('bar_mix');
+    b.style.width=(baseMonthly/maxV*100)+'%'; b.textContent=L(baseMonthly)+'/mo';
+    m.style.width=(monthly/maxV*100)+'%'; m.textContent=L(monthly)+'/mo';
+  }
+  ids.forEach(function(id){ document.getElementById(id).addEventListener('input', compute); });
+  document.getElementById('resetCalc').addEventListener('click', function(){
+    ids.forEach(function(id){ document.getElementById(id).value=defaults[id]; }); compute();
+  });
+  compute();
+
+  /* ---- Round 3: verdict ---- */
+  var vbtns=document.querySelectorAll('.verdict button');
+  var VLABEL={approve:'APPROVE', cond:'APPROVE WITH CONDITIONS', block:'BLOCK'};
+  vbtns.forEach(function(b){ b.addEventListener('click', function(){
+    vbtns.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed','false'); });
+    b.classList.add('on'); b.setAttribute('aria-pressed','true');
+  }); });
+  function currentVerdict(){ var on=document.querySelector('.verdict button.on'); return on?VLABEL[on.getAttribute('data-v')]:null; }
+
+  /* ---- Answer key reveal (shared) ---- */
+  var revealBtn=document.getElementById('revealBtn'), key=document.getElementById('answerKey');
+  function showAnswers(scroll){ key.classList.add('shown'); revealBtn.textContent='Hide model answers'; revealBtn.setAttribute('aria-expanded','true'); if(scroll){ document.getElementById('answers').scrollIntoView({behavior:'smooth',block:'start'}); } }
+  function hideAnswers(){ key.classList.remove('shown'); revealBtn.textContent='Reveal model answers'; revealBtn.setAttribute('aria-expanded','false'); }
+  revealBtn.addEventListener('click', function(){ if(key.classList.contains('shown')) hideAnswers(); else showAnswers(true); });
+
+  /* ---- Submit / self-check ---- */
+  var submitBtn=document.getElementById('submitBtn'), submitSummary=document.getElementById('submitSummary');
+  submitBtn.addEventListener('click', function(){
+    var caf=cafSummary();
+    var placed=Array.prototype.filter.call(document.querySelectorAll('#r1table .r-select'),function(s){return s.value;}).length;
+    var verdict=currentVerdict();
+    if(caf.rated<6 || placed<7 || !verdict){
+      var msg='Before you reveal the model answers:\n';
+      if(caf.rated<6) msg+='\u2022 Round 1 (CAF): '+caf.rated+' of 6 perspectives rated.\n';
+      if(placed<7)    msg+='\u2022 Round 2 (Hybrid): '+placed+' of 7 systems placed.\n';
+      if(!verdict)    msg+='\u2022 Round 4 (Security): no decision cast yet.\n';
+      msg+='\nReveal the answers anyway?';
+      if(!window.confirm(msg)) return;
+    }
+    var saving=document.getElementById('r_save').textContent;
+    document.getElementById('yourCall').textContent=verdict||'not cast';
+    submitSummary.hidden=false;
+    submitSummary.innerHTML='<b>Submitted.</b> R1 CAF &mdash; '+caf.txt+' &nbsp;\u00b7&nbsp; '+
+      'R2 Hybrid &mdash; '+placed+'/7 placed &nbsp;\u00b7&nbsp; '+
+      'R3 Storage &mdash; saving '+saving+' &nbsp;\u00b7&nbsp; R4 Security &mdash; <b>'+(verdict||'\u2014')+'</b>. '+
+      '<a href="#answers">Compare with the model answers &darr;</a>';
+    submitBtn.textContent='Submitted \u2713 \u2014 answers revealed below';
+    submitBtn.classList.add('done');
+    showAnswers(false);
+    document.getElementById('answers').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+
+  /* ---- active nav highlight ---- */
+  var links=Array.prototype.slice.call(document.querySelectorAll('.nav a')), map={};
+  links.forEach(function(a){ var id=a.getAttribute('href').slice(1), s=document.getElementById(id); if(s) map[id]=a; });
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){
+      links.forEach(function(a){ a.style.color=''; a.style.background=''; });
+      var a=map[en.target.id]; if(a){ a.style.color='#fff'; a.style.background='rgba(6,195,154,.18)'; }
+    }});
+  }, {rootMargin:'-45% 0px -50% 0px'});
+  Object.keys(map).forEach(function(id){ obs.observe(document.getElementById(id)); });
+})();
+</script>
+</body>
+</html>
