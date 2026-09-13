@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Cost-Cutting War Room — Cloud Cost Optimisation Activity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B2A38; --ink-2:#0F3B4E; --deep:#065A82; --teal:#1C7293;
+    --signal:#06C39A; --signal-dk:#049B7C; --amber:#E9A317; --coral:#E0574A;
+    --paper:#EEF4F7; --card:#FFFFFF; --line:#CDDDE5; --line-2:#E3EDF1;
+    --muted:#5A7686; --text:#123141;
+    --aws:#E9A317; --azure:#065A82; --gcp:#1C7293;
+    --serif:'Spectral', Georgia, 'Times New Roman', serif;
+    --sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+    --maxw:920px;
+    --shadow:0 1px 2px rgba(11,42,56,.04), 0 8px 24px -12px rgba(11,42,56,.22);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--paper); color:var(--text); font-family:var(--sans); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  ::selection{background:var(--signal); color:var(--ink);}
+  #progress{position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg,var(--signal),var(--teal)); z-index:60; transition:width .1s linear;}
+
+  .site-header{position:sticky; top:0; z-index:50; background:rgba(11,42,56,.94); backdrop-filter:blur(8px); border-bottom:1px solid rgba(255,255,255,.08);}
+  .nav{max-width:var(--maxw); margin:0 auto; padding:.6rem 1.3rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;}
+  .nav .brand{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--signal); font-weight:600; white-space:nowrap;}
+  .nav .brand b{color:#fff; font-weight:600;}
+  .nav ul{display:flex; gap:.15rem; list-style:none; margin:0; padding:0; flex-wrap:wrap;}
+  .nav a{font-size:.82rem; color:#B9D2DE; text-decoration:none; padding:.3rem .55rem; border-radius:6px; font-weight:500; white-space:nowrap;}
+  .nav a:hover{background:rgba(255,255,255,.09); color:#fff;}
+  .nav .spacer{flex:1}
+  .btn-print{font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); background:var(--signal); border:none; padding:.45rem .8rem; border-radius:7px; font-weight:600; cursor:pointer;}
+  .btn-print:hover{background:#fff;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:0 1.3rem 5rem;}
+  section{scroll-margin-top:70px;}
+
+  .hero{background:radial-gradient(1100px 380px at 82% -8%, rgba(6,195,154,.16), transparent 60%), radial-gradient(760px 320px at 8% 0%, rgba(28,114,147,.28), transparent 55%), var(--ink); color:#EAF2F5; margin:0 -1.3rem; padding:3.4rem 1.3rem 2.6rem; border-radius:0 0 20px 20px;}
+  .eyebrow{font-family:var(--mono); font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--signal); font-weight:600; display:flex; align-items:center; gap:.55rem;}
+  .eyebrow .dot{width:8px; height:8px; border-radius:50%; background:var(--signal); box-shadow:0 0 0 0 rgba(6,195,154,.6); animation:pulse 2.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(6,195,154,.55)}70%{box-shadow:0 0 0 9px rgba(6,195,154,0)}100%{box-shadow:0 0 0 0 rgba(6,195,154,0)}}
+  .hero h1{font-family:var(--serif); font-weight:800; font-size:clamp(2.4rem,5.6vw,3.8rem); line-height:1.03; margin:.9rem 0 .5rem; letter-spacing:-.01em; color:#fff;}
+  .hero .lede{font-size:clamp(1.05rem,2.2vw,1.3rem); color:#C4DAE3; max-width:48ch; font-weight:400; font-family:var(--serif); font-style:italic;}
+  .brief{margin-top:1.9rem; background:rgba(255,255,255,.05); border:1px solid rgba(6,195,154,.35); border-radius:14px; padding:1.25rem 1.4rem;}
+  .brief .tag{font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--signal); font-weight:600;}
+  .brief h2{font-family:var(--serif); font-size:1.5rem; margin:.35rem 0 .5rem; color:#fff; font-weight:700;}
+  .brief p{margin:0; color:#CFE1E9; font-size:1rem;}
+
+  .launch{display:grid; grid-template-columns:repeat(4,1fr); gap:.7rem; margin-top:1.4rem;}
+  .launch a{position:relative; text-decoration:none; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:1rem 1rem 1.05rem; color:#EAF2F5; transition:transform .15s ease, border-color .15s ease, background .15s ease;}
+  .launch a:hover{transform:translateY(-3px); border-color:var(--signal); background:rgba(6,195,154,.08);}
+  .launch .n{font-family:var(--mono); font-size:.72rem; letter-spacing:.12em; color:var(--signal); font-weight:600;}
+  .launch .t{font-family:var(--serif); font-weight:600; font-size:1.08rem; margin:.25rem 0 .2rem; color:#fff;}
+  .launch .d{font-size:.82rem; color:#AEC8D3;}
+  .launch .time{position:absolute; top:.85rem; right:.9rem; font-family:var(--mono); font-size:.68rem; color:#8FB0BD;}
+
+  .sec-head{margin:3.4rem 0 1.3rem;}
+  .sec-eyebrow{font-family:var(--mono); font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--teal); font-weight:600; display:flex; align-items:center; gap:.5rem;}
+  .sec-eyebrow .sq{width:9px; height:9px; background:var(--teal); border-radius:2px;}
+  .sec-head h2{font-family:var(--serif); font-weight:700; font-size:clamp(1.7rem,3.6vw,2.35rem); margin:.45rem 0 .2rem; color:var(--ink); letter-spacing:-.01em; line-height:1.1;}
+  .sec-head p.sub{margin:.1rem 0 0; color:var(--muted); font-size:1.02rem; max-width:64ch;}
+
+  h3{font-family:var(--serif); font-weight:600; font-size:1.28rem; color:var(--ink); margin:2rem 0 .6rem;}
+  h4{font-family:var(--sans); font-weight:700; font-size:1rem; color:var(--deep); margin:1.4rem 0 .4rem;}
+  p{margin:.55rem 0;}
+
+  .card{background:var(--card); border:1px solid var(--line-2); border-radius:14px; padding:1.4rem 1.5rem; box-shadow:var(--shadow); margin:1.1rem 0;}
+  .callout{border-radius:12px; padding:1.05rem 1.25rem; margin:1.1rem 0; border:1px solid var(--line); background:#F4F9FB;}
+  .callout .lab{font-family:var(--mono); font-size:.68rem; letter-spacing:.13em; text-transform:uppercase; font-weight:600; color:var(--deep); display:block; margin-bottom:.3rem;}
+  .callout.task{background:linear-gradient(180deg,#F0FaF7,#F3F9FB); border-color:rgba(6,195,154,.4);}
+  .callout.task .lab{color:var(--signal-dk);}
+  .callout.discuss{background:#FDF6E7; border-color:#F0D89A;}
+  .callout.discuss .lab{color:#B07C10;}
+  .callout p{margin:.2rem 0;}
+
+  .tbl{width:100%; border-collapse:separate; border-spacing:0; margin:1rem 0; font-size:.94rem; border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .tbl thead th{background:var(--ink); color:#fff; text-align:left; padding:.62rem .85rem; font-weight:600; font-size:.82rem;}
+  .tbl td{padding:.6rem .85rem; border-top:1px solid var(--line-2); vertical-align:top;}
+  .tbl tbody tr:nth-child(even){background:#F5FaFC;}
+  .tbl td.center,.tbl th.center{text-align:center;}
+  .tbl .strat{font-weight:700; color:var(--deep);}
+
+  ul.clean{margin:.5rem 0; padding-left:1.15rem;}
+  ul.clean li{margin:.32rem 0;} ul.clean li::marker{color:var(--teal);}
+  .primer-note{font-size:.92rem; color:var(--muted); font-style:italic; margin:.3rem 0;}
+
+  /* provider chips */
+  .pv{display:inline-block; font-family:var(--mono); font-size:.6rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase; padding:.12rem .42rem; border-radius:5px; color:#fff; vertical-align:middle;}
+  .pv.aws{background:var(--aws); color:#3a2a05;} .pv.azure{background:var(--azure);} .pv.gcp{background:var(--gcp);}
+
+  /* Round 1 — spot the provider */
+  .r1-meter, .meter{font-family:var(--mono); font-size:.82rem; color:var(--muted); margin:.4rem 0 1rem;}
+  .meter b{color:var(--signal-dk);}
+  .q1{background:var(--card); border:1px solid var(--line-2); border-radius:12px; box-shadow:var(--shadow); padding:.9rem 1.1rem; margin:.7rem 0; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;}
+  .q1 .svc{font-family:var(--serif); font-weight:600; font-size:1.15rem; color:var(--ink); flex:1; min-width:180px;}
+  .q1 .svc small{display:block; font-family:var(--sans); font-weight:400; font-size:.78rem; color:var(--muted); font-style:italic; margin-top:.1rem;}
+  .q1 .opts{display:flex; gap:.45rem; flex-wrap:wrap;}
+  .q1 .opts button{font-family:var(--mono); font-size:.72rem; font-weight:600; letter-spacing:.03em; text-transform:uppercase; padding:.5rem .8rem; border-radius:8px; cursor:pointer; background:#F4F9FB; color:var(--muted); border:1.5px solid var(--line); transition:all .12s;}
+  .q1 .opts button:hover{border-color:var(--teal); color:var(--deep);}
+  .q1 .opts button.correct{background:rgba(6,195,154,.16); border-color:var(--signal); color:var(--signal-dk);}
+  .q1 .opts button.wrong{background:rgba(224,87,74,.14); border-color:var(--coral); color:#b5382e;}
+  .q1 .opts button:disabled{cursor:default; opacity:1;}
+  .q1 .verdict{font-family:var(--mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; min-width:56px; text-align:right;}
+  .q1 .verdict.ok{color:var(--signal-dk);} .q1 .verdict.no{color:var(--coral);}
+
+  /* worksheet dropdowns (Round 2 & 3) */
+  select.r-select{font-family:var(--sans); font-size:.88rem; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:.44rem .55rem; width:100%; background:#F8FBFC url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23065A82' stroke-width='1.6'/></svg>") no-repeat right .55rem center; -webkit-appearance:none; appearance:none; padding-right:1.7rem;}
+  select.r-select:focus, input.txt:focus, textarea.txt:focus{outline:2px solid var(--signal); outline-offset:1px; border-color:var(--signal);}
+  select.r-select.right{border-color:var(--signal); background-color:#EFFbF7;}
+  select.r-select.wrong{border-color:var(--coral); background-color:#FDF1F0;}
+  input.txt, textarea.txt{font-family:var(--sans); font-size:.88rem; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:.44rem .55rem; width:100%; background:#fff;}
+  textarea.txt{resize:vertical; min-height:2.4rem;}
+
+  .ws-row{display:grid; grid-template-columns:1fr 200px 220px; gap:.6rem; align-items:center; padding:.7rem 0; border-top:1px solid var(--line-2);}
+  .ws-row:first-of-type{border-top:none;}
+  .ws-need{font-size:.92rem;} .ws-need b{color:var(--ink);}
+  @media(max-width:760px){ .ws-row{grid-template-columns:1fr;} }
+
+  /* guardrail-style chips (Round 2 guardrails not needed) */
+
+  /* Round 4 provider picker */
+  .prof{background:var(--card); border:1px solid var(--line-2); border-radius:12px; box-shadow:var(--shadow); padding:1rem 1.15rem; margin:.8rem 0;}
+  .prof .pt{font-family:var(--serif); font-weight:600; font-size:1.08rem; color:var(--ink); margin-bottom:.2rem;}
+  .prof .pd{font-size:.9rem; color:var(--muted); margin-bottom:.7rem;}
+  .pick{display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.55rem;}
+  .pick button{font-family:var(--mono); font-size:.72rem; font-weight:600; letter-spacing:.03em; text-transform:uppercase; padding:.5rem .85rem; border-radius:8px; cursor:pointer; background:#F4F9FB; color:var(--muted); border:1.5px solid var(--line); transition:all .12s;}
+  .pick button:hover{border-color:var(--teal); color:var(--deep);}
+  .pick button.on{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  /* results / submit */
+  .results{background:var(--ink); color:#EAF2F5; border-radius:14px; padding:1.3rem 1.4rem; margin-top:1.1rem; box-shadow:var(--shadow);}
+  .results .t{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--signal); margin-bottom:.7rem;}
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem;}
+  .stat{background:rgba(255,255,255,.05); border-radius:10px; padding:.8rem .85rem;}
+  .stat .k{font-family:var(--mono); font-size:.58rem; letter-spacing:.06em; text-transform:uppercase; color:#9CBBC7;}
+  .stat .val{font-family:var(--mono); font-weight:600; font-size:1.5rem; margin-top:.2rem; color:#fff;}
+  .stat.good .val{color:var(--signal);}
+  @media(max-width:640px){ .stat-row{grid-template-columns:repeat(2,1fr);} .launch{grid-template-columns:repeat(2,1fr);} .ws-row{grid-template-columns:1fr;} }
+
+  .submit-panel{background:linear-gradient(160deg,#0F3B4E,#0B2A38); color:#EAF2F5; border-radius:16px; padding:1.9rem 1.6rem; text-align:center; box-shadow:var(--shadow); border:1px solid rgba(6,195,154,.32); margin:1.1rem 0;}
+  .submit-panel .lab{font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--signal);}
+  .submit-panel h3{font-family:var(--serif); color:#fff; margin:.45rem 0 .35rem; font-size:1.55rem;}
+  .submit-panel p{color:#C4DAE3; margin:.2rem auto .95rem; max-width:56ch; font-size:.98rem;}
+  .btn-submit{font-family:var(--mono); font-size:.82rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600; background:var(--signal); color:var(--ink); border:none; padding:.85rem 1.7rem; border-radius:10px; cursor:pointer; transition:transform .12s ease, background .15s ease;}
+  .btn-submit:hover{transform:translateY(-2px); background:#fff;}
+  .btn-submit.done{background:var(--signal-dk); color:#fff; cursor:default; transform:none;}
+  .submit-summary{margin-top:1.1rem; font-size:.92rem; color:#CFE1E9; background:rgba(6,195,154,.1); border:1px solid rgba(6,195,154,.3); border-radius:10px; padding:.8rem 1rem; text-align:left; display:none;}
+  .submit-summary.show{display:block;} .submit-summary b{color:#fff;} .submit-summary a{color:var(--signal); font-weight:600; text-decoration:none;} .submit-summary a:hover{text-decoration:underline;}
+
+  .instructor{display:none;}
+  .instructor.show{display:block;}
+  .instructor-bar{display:flex; align-items:center; gap:1rem; flex-wrap:wrap; background:#FbEEEC; border:1px solid #F0C4BE; border-radius:12px; padding:1rem 1.25rem; margin:1.1rem 0;}
+  .instructor-bar .msg{flex:1; font-size:.92rem; color:#7a3b34;} .instructor-bar .msg b{color:#5f2b25;}
+  .btn-reveal{font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600; background:var(--coral); color:#fff; border:none; padding:.55rem 1rem; border-radius:8px; cursor:pointer;}
+  .btn-reveal:hover{background:#c9453a;}
+
+  footer.pg{border-top:1px solid var(--line); margin-top:3rem; padding-top:1.4rem; color:var(--muted); font-size:.85rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:.6rem;}
+  footer.pg .mono{font-family:var(--mono); font-size:.72rem; letter-spacing:.05em;}
+
+  @media print{
+    .site-header,#progress,.btn-print,.btn-submit{display:none!important;}
+    .instructor{display:block!important;} .submit-summary{display:block!important;}
+    body{background:#fff;} .hero{background:var(--ink)!important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    *{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  }
+</style>
+<body>
+<div id="progress"></div>
+
+<header class="site-header">
+  <nav class="nav">
+    <span class="brand"><b>Meridian</b> · Cost-Cutting War Room</span>
+    <ul>
+      <li><a href="#brief">Brief</a></li>
+      <li><a href="#runsheet">Run-sheet</a></li>
+      <li><a href="#primer">Primer</a></li>
+      <li><a href="#r1">R1</a></li>
+      <li><a href="#r2">R2</a></li>
+      <li><a href="#r3">R3</a></li>
+      <li><a href="#r4">R4</a></li>
+      <li><a href="#submit">Submit</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+    </ul>
+    <span class="spacer"></span>
+    <button class="btn-print" onclick="window.print()">Print / PDF</button>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="brief">
+    <div class="eyebrow"><span class="dot"></span>Hands-on activity · Cloud Cost Optimisation · ~55 minutes</div>
+    <h1>The Cost-Cutting War Room</h1>
+    <p class="lede">Your team is the FinOps consultancy. One client, one scary bill, one quarter to cut it. Name the levers, triage the bill, buy compute right, and sequence a roadmap you can sell to the CFO.</p>
+
+    <div class="brief">
+      <span class="tag">Engagement brief · your client</span>
+      <h2>Meridian Logistics — a $2.4M bill growing 40% a year</h2>
+      <p>Meridian runs a parcel-tracking and route-optimisation platform. The cloud bill is <b>$2.4M a year and up 40%</b>, and the CFO wants it down 30% this quarter. What you find: three teams spinning up resources with <b>no tags</b>, almost everything on full-price <b>on-demand</b>, dev and staging running <b>24/7</b>, five-year-old logs on hot storage, map tiles served straight to a global app, a Kubernetes cluster at <b>20% utilisation</b>, and a cleanup last year that already crept back. You have the playbook — now apply it.</p>
+    </div>
+
+    <div class="launch">
+      <a href="#r1"><span class="time">10 min</span><div class="n">Round 01</div><div class="t">Name the Lever</div><div class="d">Buy cheaper, use less or architect?</div></a>
+      <a href="#r2"><span class="time">15 min</span><div class="n">Round 02</div><div class="t">Triage the Bill</div><div class="d">Pick the fix for each finding</div></a>
+      <a href="#r3"><span class="time">14 min</span><div class="n">Round 03</div><div class="t">Buy It Right</div><div class="d">On-demand, commit, spot or kill?</div></a>
+      <a href="#r4"><span class="time">14 min</span><div class="n">Round 04</div><div class="t">Sequence &amp; Sell</div><div class="d">Place it on the impact/effort map</div></a>
+    </div>
+  </section>
+
+  <!-- RUN SHEET -->
+  <section id="runsheet">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Facilitator</div>
+      <h2>The run-sheet (~55 min)</h2>
+      <p class="sub">Suggested timing. Keep rounds tight — the debrief is where the learning lands. Teams of 4–5 work best.</p>
+    </div>
+    <table class="tbl">
+      <thead><tr><th style="width:110px">Time</th><th style="width:250px">Segment</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>0–2 min</td><td class="strat">Set-up</td><td>Form consulting teams, read the Meridian brief aloud</td></tr>
+        <tr><td>2–12</td><td class="strat">Round 1 — Name the Lever</td><td>Sort tactics into buy cheaper / use less / architect</td></tr>
+        <tr><td>12–27</td><td class="strat">Round 2 — Triage the Bill</td><td>Match the best strategy to each finding in Meridian's bill</td></tr>
+        <tr><td>27–41</td><td class="strat">Round 3 — Buy It Right</td><td>On-demand vs commit vs spot vs rightsize for six workloads</td></tr>
+        <tr><td>41–52</td><td class="strat">Round 4 — Sequence &amp; Sell</td><td>Place four initiatives on the impact/effort map and pitch them</td></tr>
+        <tr><td>52–55</td><td class="strat">Debrief</td><td>Submit, reveal model answers, connect back to the lecture</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <span class="lab">Materials each team needs</span>
+      <p>This page (or a printout) · the playbook deck as reference (the <b>one-page roadmap</b> and the <b>impact/effort 2×2</b> especially) · no cloud accounts required. Every call here is a management judgement.</p>
+    </div>
+  </section>
+
+  <!-- PRIMER -->
+  <section id="primer">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Reference</div>
+      <h2>60-second refresher</h2>
+      <p class="sub">The ideas you'll use. Skim now; come back during the rounds.</p>
+    </div>
+    <div class="card">
+      <h4>Every saving comes from one of three levers</h4>
+      <ul class="clean">
+        <li><b>Buy cheaper</b> — lower the rate for the same usage: commitments, spot, licensing, negotiation.</li>
+        <li><b>Use less</b> — cut the usage and the waste: rightsizing, kill idle, scheduling, storage tiering.</li>
+        <li><b>Architect smarter</b> — design for efficiency: egress reduction, serverless, Kubernetes efficiency.</li>
+      </ul>
+      <p class="primer-note">…and <b>govern</b> it. A FinOps operating model — tagging, showback, unit economics, forecasting — keeps every saving from creeping back.</p>
+      <h4>The four ways to buy compute</h4>
+      <ul class="clean">
+        <li><b>On-demand</b> — pay per second, no commitment. Best for unpredictable, spiky load; autoscale it.</li>
+        <li><b>Commitment (1–3 yr)</b> — up to ~70% off for a steady, always-on baseline. <span class="pv aws">Savings Plans</span> <span class="pv azure">Reservations</span> <span class="pv gcp">CUDs</span></li>
+        <li><b>Spot</b> — up to ~90% off spare capacity that can be reclaimed. For interruptible, restartable work.</li>
+        <li><b>Rightsize / kill</b> — the cheapest server is the one you turned off. Do this <i>before</i> you commit.</li>
+      </ul>
+      <h4>Sequence with impact vs effort</h4>
+      <ul class="clean">
+        <li><b>Quick wins</b> — high impact, low effort. Kill idle, rightsize, schedule, first commitments. Do these first.</li>
+        <li><b>Big bets</b> — high impact, high effort. Modernisation, Kubernetes, negotiation. Plan and staff them.</li>
+        <li><b>Easy extras</b> — low effort, modest impact. Storage tiering, licensing. Automate and forget.</li>
+        <li><b>Question it</b> — low impact, high effort. Usually not worth it.</li>
+      </ul>
+      <p class="primer-note">The rule: quick wins fund the engagement; structural work comes next; the operating model makes it stick. Rightsize before you commit — a reservation on an oversized box just locks in the waste.</p>
+    </div>
+  </section>
+
+  <!-- ROUND 1 -->
+  <section id="r1">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Round 01 · Name the Lever · 10 min</div>
+      <h2>Which lever is this?</h2>
+      <p class="sub">A cost-cutting tactic flashes up — tap the lever it belongs to: buy cheaper, use less, or architect smarter. Instant feedback; your team's score builds live.</p>
+    </div>
+    <div class="r1-meter">Score: <b id="r1score">0</b> / <span id="r1total">0</span> answered · <b id="r1right">0</b> correct</div>
+    <div id="r1list"></div>
+  </section>
+
+  <!-- ROUND 2 -->
+  <section id="r2">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Round 02 · Triage the Bill · 15 min</div>
+      <h2>Triage Meridian's bill</h2>
+      <p class="sub">Six real findings from the cost audit. For each, choose the single best strategy from the dropdown, then jot the rough saving you'd promise the CFO. The meter tracks matches to the model.</p>
+    </div>
+    <div class="callout task">
+      <span class="lab">Your task</span>
+      <p>Match each finding to the one clearly-best strategy. There's a distractor in the dropdown — not every option is the right answer for a row.</p>
+    </div>
+    <div class="meter">Findings triaged: <b id="r2score">0</b> / 6</div>
+    <div class="card" id="r2list"></div>
+    <div class="callout discuss">
+      <span class="lab">Share-out · 2 min</span>
+      <p>Which finding was the biggest single saving? Most teams under-rate the <b>steady 24/7 baseline</b> — it's boring, but committing it is often the largest line on the whole engagement.</p>
+    </div>
+  </section>
+
+  <!-- ROUND 3 -->
+  <section id="r3">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Round 03 · Buy It Right · 14 min</div>
+      <h2>On-demand, commit, spot or kill?</h2>
+      <p class="sub">Six of Meridian's compute workloads. Pick the buying model that fits each. This is the judgement that turns a scary bill into a boring one.</p>
+    </div>
+    <div class="meter">Correct: <b id="r3score">0</b> / 6</div>
+    <div class="card" id="r3list"></div>
+    <div class="callout discuss">
+      <span class="lab">Discussion · 2 min</span>
+      <p>Commitments reward <i>predictable</i> load; spot rewards <i>interruptible</i> load. The trap is committing to a box you haven't rightsized. Where did "rightsize / kill first" apply — and where would committing have locked in waste?</p>
+    </div>
+  </section>
+
+  <!-- ROUND 4 -->
+  <section id="r4">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Round 04 · Sequence &amp; Sell · 14 min</div>
+      <h2>Place it on the map, then pitch it</h2>
+      <p class="sub">Four candidate initiatives. For each, place it on the impact/effort map — <b>quick win, big bet, easy extra</b> or <b>question it</b> — then write the one-line pitch you'd give the CFO. There's no single right answer; reward a defensible placement and a sharp pitch.</p>
+    </div>
+    <div id="r4list"></div>
+    <div class="callout discuss">
+      <span class="lab">Debrief · whole class · 3 min</span>
+      <p>Sequencing is the real consulting skill: quick wins fund the work, big bets get planned and staffed, easy extras get automated, and low-impact/high-effort ideas get politely killed. Which initiative caused the most debate — and does market share ever decide any of this? (It doesn't.)</p>
+    </div>
+  </section>
+
+  <!-- SUBMIT -->
+  <section id="submit">
+    <div class="submit-panel">
+      <span class="lab">Self-check</span>
+      <h3>Finished the four rounds?</h3>
+      <p>Submit to lock in your score and reveal the model answers. You can keep editing and re-checking afterwards.</p>
+      <button class="btn-submit" id="btnSubmit">Submit my answers &rarr;</button>
+      <div class="submit-summary" id="summary"></div>
+    </div>
+    <div class="results" id="scoreboard" style="display:none">
+      <div class="t">◆ Your scoreboard</div>
+      <div class="stat-row">
+        <div class="stat" id="sc1"><div class="k">R1 · Name the lever</div><div class="val">—</div></div>
+        <div class="stat" id="sc2"><div class="k">R2 · Triage the bill</div><div class="val">—</div></div>
+        <div class="stat" id="sc3"><div class="k">R3 · Buy it right</div><div class="val">—</div></div>
+        <div class="stat" id="sc4"><div class="k">R4 · Roadmap placed</div><div class="val">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTRUCTOR -->
+  <section id="instructor-sec">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Instructor</div>
+      <h2>Facilitator guide &amp; model answers</h2>
+    </div>
+    <div class="instructor-bar">
+      <div class="msg"><b>Instructor copy.</b> Hidden by default so you can project this page in class — students also reveal it by pressing Submit above. Model answers, not the only answers: reward defensible reasoning.</div>
+      <button class="btn-reveal" id="btnReveal">Reveal model answers</button>
+    </div>
+    <div class="instructor" id="instructor">
+      <div class="card">
+        <h4>Round 1 — teaching point</h4>
+        <p>Warm-up on the framework. If a team scores low, they haven't internalised the three levers — send them back to the deck's framework slide before Round 2. The tell: <b>rate</b> changes the price of the same thing (commitments, spot, licences, negotiation); <b>usage</b> changes how much you run (rightsize, kill, schedule, tier); <b>architecture</b> changes the design (CDN, serverless, Kubernetes, managed services). Governance isn't in this round — it's the wrapper that keeps the other three from decaying.</p>
+        <h4>Round 2 — model triage</h4>
+        <table class="tbl">
+          <thead><tr><th>Finding in Meridian's bill</th><th>Model strategy</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Web servers averaging 12% CPU</td><td class="strat">Rightsizing</td><td>Over-provisioned — shrink to fit real usage</td></tr>
+            <tr><td>3 TB unattached disks &amp; old snapshots</td><td class="strat">Delete idle &amp; zombie</td><td>Pure waste — no downside to removing it</td></tr>
+            <tr><td>Dev &amp; staging running 24/7, used ~40 h/week</td><td class="strat">Schedule / autoscale</td><td>Non-prod off out-of-hours ≈ 70% saved</td></tr>
+            <tr><td>Five-year-old logs on standard hot storage</td><td class="strat">Storage tiering</td><td>Lifecycle cold data to archive — up to ~90% off</td></tr>
+            <tr><td>Map tiles served straight to a global app</td><td class="strat">Egress / CDN</td><td>Cache at the edge to cut egress</td></tr>
+            <tr><td>Steady 24/7 300-vCPU baseline on on-demand</td><td class="strat">Commitments</td><td>Predictable baseline — the biggest single saving</td></tr>
+          </tbody>
+        </table>
+        <p>Teaching point: <b>Spot</b> is the distractor here — none of these six findings is a spot case (that's Round 3). The classic slip is answering "rightsize" for everything; each finding has a distinct best fix across three different levers.</p>
+        <h4>Round 3 — model buying models</h4>
+        <table class="tbl">
+          <thead><tr><th>Workload</th><th>Model</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Production tracking database, steady 24/7</td><td class="strat">Commitment (1–3 yr)</td><td>Predictable baseline — deepest steady-state discount</td></tr>
+            <tr><td>Nightly ML route-optimisation, can restart</td><td class="strat">Spot</td><td>Interruptible &amp; off-peak — up to ~90% off</td></tr>
+            <tr><td>A staging box left on at 4% CPU for a month</td><td class="strat">Rightsize / kill</td><td>Idle waste — shrink it or switch it off</td></tr>
+            <tr><td>Unpredictable delivery-demand spikes</td><td class="strat">On-demand (autoscale)</td><td>Can't commit to load you can't forecast</td></tr>
+            <tr><td>CI/CD build runners, ephemeral</td><td class="strat">Spot</td><td>Stateless &amp; restartable — ideal spot case</td></tr>
+            <tr><td>A correctly-sized, always-on internal API</td><td class="strat">Commitment (1–3 yr)</td><td>Steady and already rightsized — safe to commit</td></tr>
+          </tbody>
+        </table>
+        <p>Teaching point: <b>commit</b> steady, already-rightsized load; use <b>spot</b> for interruptible batch and CI; keep <b>on-demand</b> for the unpredictable; and <b>rightsize/kill</b> before anything else — committing to an oversized box just locks in the waste.</p>
+        <h4>Round 4 — model roadmap placement</h4>
+        <table class="tbl">
+          <thead><tr><th>Initiative</th><th>Model placement</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Kill 3 TB of unattached disks &amp; 200 orphaned snapshots</td><td class="strat">Quick win</td><td>High impact, near-zero effort — do it this week</td></tr>
+            <tr><td>Re-platform the tracking monolith to serverless</td><td class="strat">Big bet</td><td>Large saving but months of engineering — plan &amp; staff</td></tr>
+            <tr><td>Turn on lifecycle rules to archive old logs</td><td class="strat">Easy extra</td><td>Low effort, modest saving — automate and forget</td></tr>
+            <tr><td>Rewrite the core engine in a faster language for ~5% compute</td><td class="strat">Question it</td><td>High effort for a small, uncertain gain</td></tr>
+          </tbody>
+        </table>
+        <p>Teaching point: reasonable teams may nudge placements (a very large disk bill could push #1 further into "quick win"; a cheap serverless pilot could de-risk #2). Reward the <i>reasoning</i>. The meta-lesson: a consultant's value isn't knowing the tactics — it's <b>sequencing</b> them so early savings fund the hard work, and packaging each as a one-line pitch the CFO will approve.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section id="glossary">
+    <div class="sec-head">
+      <div class="sec-eyebrow"><span class="sq"></span>Reference</div>
+      <h2>Glossary</h2>
+      <p class="sub">The levers and tactics in play, in one place.</p>
+    </div>
+    <div class="card">
+      <table class="tbl">
+        <thead><tr><th style="width:210px">Term</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td class="strat">Buy cheaper (rate)</td><td>Lower the unit price for the same usage — commitments, spot, licensing, negotiation.</td></tr>
+          <tr><td class="strat">Use less (usage)</td><td>Cut consumption and waste — rightsizing, killing idle, scheduling, storage tiering.</td></tr>
+          <tr><td class="strat">Architect smarter</td><td>Design for efficiency — egress reduction, serverless, Kubernetes bin-packing.</td></tr>
+          <tr><td class="strat">Commitment</td><td>1–3 yr discount for steady usage. <span class="pv aws">Savings Plans / RIs</span> <span class="pv azure">Reservations</span> <span class="pv gcp">CUDs</span></td></tr>
+          <tr><td class="strat">Spot / preemptible</td><td>Deep discount on spare capacity that can be reclaimed. For interruptible work.</td></tr>
+          <tr><td class="strat">Rightsizing</td><td>Shrinking (or killing) resources to match real utilisation. Usually the fastest saving.</td></tr>
+          <tr><td class="strat">Idle / zombie</td><td>Resources running and billed but serving nothing — unattached disks, orphaned snapshots.</td></tr>
+          <tr><td class="strat">Scheduling</td><td>Turning non-prod off out of hours; autoscaling prod to demand instead of peak 24/7.</td></tr>
+          <tr><td class="strat">Storage tiering</td><td>Lifecycle rules that move cold data to cheaper infrequent-access and archive tiers.</td></tr>
+          <tr><td class="strat">Egress</td><td>Data leaving the cloud or crossing regions. Metered; a CDN cuts it. Inbound is usually free.</td></tr>
+          <tr><td class="strat">FinOps</td><td>Running cloud as a business: Inform → Optimize → Operate, as a continuous loop.</td></tr>
+          <tr><td class="strat">Showback / chargeback</td><td>Showback shows a team its bill; chargeback makes them pay it. The lever for accountability.</td></tr>
+          <tr><td class="strat">Unit economics</td><td>Cost per customer / per transaction — the metric that keeps spend honest as you scale.</td></tr>
+          <tr><td class="strat">Impact vs effort</td><td>The 2×2 for sequencing: quick wins, big bets, easy extras, and things to question.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="pg">
+    <span>The Cost-Cutting War Room · companion to the Cloud Cost Optimisation playbook</span>
+    <span class="mono">BUY CHEAPER · USE LESS · ARCHITECT</span>
+  </footer>
+</main>
+
+<script>
+/* ---------- progress bar ---------- */
+const prog=document.getElementById('progress');
+addEventListener('scroll',()=>{const h=document.documentElement;const sc=(h.scrollTop)/(h.scrollHeight-h.clientHeight);prog.style.width=(sc*100)+'%';});
+
+/* ---------- Round 1 ---------- */
+const R1=[
+  {svc:"Savings Plans", hint:"commit to a baseline for a discount", ans:"Buy cheaper"},
+  {svc:"Spot instances", hint:"spare capacity, up to ~90% off", ans:"Buy cheaper"},
+  {svc:"Azure Hybrid Benefit", hint:"reuse Windows / SQL licences", ans:"Buy cheaper"},
+  {svc:"Committed-spend agreement", hint:"negotiate a portfolio discount", ans:"Buy cheaper"},
+  {svc:"Rightsizing a fleet", hint:"shrink over-provisioned instances", ans:"Use less"},
+  {svc:"Delete unattached disks", hint:"remove idle / zombie resources", ans:"Use less"},
+  {svc:"Turn dev off at night", hint:"schedule non-prod out of hours", ans:"Use less"},
+  {svc:"Lifecycle logs to archive", hint:"tier cold data down", ans:"Use less"},
+  {svc:"Put a CDN in front", hint:"cache at the edge, cut egress", ans:"Architect"},
+  {svc:"Replace a 24/7 VM with a function", hint:"serverless, scale to zero", ans:"Architect"},
+  {svc:"Bin-pack the Kubernetes cluster", hint:"pack nodes tight", ans:"Architect"},
+  {svc:"Move to a managed database", hint:"less idle, less ops", ans:"Architect"},
+];
+const LEVERS=["Buy cheaper","Use less","Architect"];
+let r1answered=0, r1right=0;
+const r1list=document.getElementById('r1list');
+document.getElementById('r1total').textContent=R1.length;
+R1.forEach((q)=>{
+  const row=document.createElement('div'); row.className='q1';
+  row.innerHTML=`<div class="svc">${q.svc}<small>${q.hint}</small></div>`;
+  const opts=document.createElement('div'); opts.className='opts';
+  LEVERS.forEach(lv=>{
+    const b=document.createElement('button'); b.textContent=lv;
+    b.onclick=()=>{
+      if(row.dataset.done) return;
+      row.dataset.done="1"; r1answered++;
+      const correct = lv===q.ans;
+      if(correct){ b.classList.add('correct'); r1right++; }
+      else{
+        b.classList.add('wrong');
+        [...opts.children].forEach(x=>{ if(x.textContent===q.ans) x.classList.add('correct'); });
+      }
+      [...opts.children].forEach(x=>x.disabled=true);
+      const v=document.createElement('div'); v.className='verdict '+(correct?'ok':'no');
+      v.textContent=correct?'✓ right':'✗';
+      row.appendChild(v);
+      document.getElementById('r1score').textContent=r1answered;
+      document.getElementById('r1right').textContent=r1right;
+    };
+    opts.appendChild(b);
+  });
+  row.appendChild(opts);
+  r1list.appendChild(row);
+});
+
+/* ---------- Round 2 ---------- */
+const CATS=["— choose strategy —","Rightsizing","Delete idle & zombie","Schedule / autoscale","Storage tiering","Egress / CDN","Commitments","Spot / preemptible"];
+const R2=[
+  {need:"Web servers averaging 12% CPU across the fleet", cat:"Rightsizing"},
+  {need:"3 TB of unattached disks and old snapshots", cat:"Delete idle & zombie"},
+  {need:"Dev &amp; staging running 24/7, used ~40 h/week", cat:"Schedule / autoscale"},
+  {need:"Five-year-old logs sitting on standard hot storage", cat:"Storage tiering"},
+  {need:"Map tiles served straight from storage to a global app", cat:"Egress / CDN"},
+  {need:"A steady 24/7 300-vCPU baseline on on-demand", cat:"Commitments"},
+];
+const r2list=document.getElementById('r2list');
+R2.forEach((r,i)=>{
+  const row=document.createElement('div'); row.className='ws-row';
+  const sel=document.createElement('select'); sel.className='r-select'; sel.dataset.i=i;
+  CATS.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  const inp=document.createElement('input'); inp.className='txt'; inp.placeholder="rough saving you'd promise…";
+  const need=document.createElement('div'); need.className='ws-need'; need.innerHTML="<b>"+(i+1)+".</b> "+r.need;
+  row.appendChild(need); row.appendChild(sel); row.appendChild(inp);
+  r2list.appendChild(row);
+  sel.addEventListener('change',scoreR2);
+});
+function scoreR2(){
+  let n=0;
+  [...r2list.querySelectorAll('select')].forEach(sel=>{
+    const r=R2[+sel.dataset.i];
+    sel.classList.remove('right','wrong');
+    if(sel.value===r.cat){ sel.classList.add('right'); n++; }
+    else if(sel.value!==CATS[0]){ sel.classList.add('wrong'); }
+  });
+  document.getElementById('r2score').textContent=n;
+  return n;
+}
+
+/* ---------- Round 3 ---------- */
+const MODELS=["— choose —","On-demand (autoscale)","Commitment (1–3 yr)","Spot","Rightsize / kill"];
+const R3=[
+  {w:"Production tracking database, steady 24/7 load", a:"Commitment (1–3 yr)"},
+  {w:"Nightly ML route-optimisation, can safely restart", a:"Spot"},
+  {w:"A staging box left on at 4% CPU for a month", a:"Rightsize / kill"},
+  {w:"Unpredictable delivery-demand spikes", a:"On-demand (autoscale)"},
+  {w:"CI/CD build runners, ephemeral &amp; stateless", a:"Spot"},
+  {w:"A correctly-sized, always-on internal API", a:"Commitment (1–3 yr)"},
+];
+const r3list=document.getElementById('r3list');
+R3.forEach((r,i)=>{
+  const row=document.createElement('div'); row.className='ws-row'; row.style.gridTemplateColumns="1fr 230px";
+  const sel=document.createElement('select'); sel.className='r-select'; sel.dataset.i=i;
+  MODELS.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  const need=document.createElement('div'); need.className='ws-need'; need.innerHTML="<b>"+(i+1)+".</b> "+r.w;
+  row.appendChild(need); row.appendChild(sel);
+  r3list.appendChild(row);
+  sel.addEventListener('change',scoreR3);
+});
+function scoreR3(){
+  let n=0;
+  [...r3list.querySelectorAll('select')].forEach(sel=>{
+    const r=R3[+sel.dataset.i];
+    sel.classList.remove('right','wrong');
+    if(sel.value===r.a){ sel.classList.add('right'); n++; }
+    else if(sel.value!==MODELS[0]){ sel.classList.add('wrong'); }
+  });
+  document.getElementById('r3score').textContent=n;
+  return n;
+}
+
+/* ---------- Round 4 ---------- */
+const R4=[
+  {t:"Kill 3 TB of unattached disks &amp; 200 orphaned snapshots", d:"Found in the audit; nothing is using them."},
+  {t:"Re-platform the tracking monolith to serverless", d:"Big saving on idle VM time — but months of engineering."},
+  {t:"Turn on lifecycle rules to archive five-year-old logs", d:"A few clicks; modest but real saving on cold storage."},
+  {t:"Rewrite the core engine in a faster language for ~5% compute", d:"A large effort for a small, uncertain compute gain."},
+];
+const R4OPTS=["Quick win","Big bet","Easy extra","Question it"];
+const r4list=document.getElementById('r4list');
+let r4picked=0;
+R4.forEach((r,i)=>{
+  const c=document.createElement('div'); c.className='prof';
+  c.innerHTML=`<div class="pt">${i+1}. ${r.t}</div><div class="pd">${r.d}</div>`;
+  const pick=document.createElement('div'); pick.className='pick';
+  R4OPTS.forEach(o=>{
+    const b=document.createElement('button'); b.textContent=o;
+    b.onclick=()=>{
+      const was=b.classList.contains('on');
+      [...pick.children].forEach(x=>x.classList.remove('on'));
+      if(!was){ b.classList.add('on'); }
+      r4picked=[...r4list.querySelectorAll('.pick')].filter(p=>p.querySelector('.on')).length;
+    };
+    pick.appendChild(b);
+  });
+  const ta=document.createElement('textarea'); ta.className='txt'; ta.placeholder="Your one-line pitch to the CFO…";
+  c.appendChild(pick); c.appendChild(ta);
+  r4list.appendChild(c);
+});
+
+/* ---------- Submit ---------- */
+document.getElementById('btnSubmit').addEventListener('click',()=>{
+  const r1=r1right, r2=scoreR2(), r3=scoreR3();
+  r4picked=[...r4list.querySelectorAll('.pick')].filter(p=>p.querySelector('.on')).length;
+  document.getElementById('scoreboard').style.display='block';
+  const set=(id,txt,good)=>{const el=document.querySelector('#'+id+' .val');el.textContent=txt; if(good)document.getElementById(id).classList.add('good');};
+  set('sc1', r1+' / '+R1.length, r1>=R1.length*0.7);
+  set('sc2', r2+' / 6', r2>=5);
+  set('sc3', r3+' / 6', r3>=5);
+  set('sc4', r4picked+' / 4', r4picked>=4);
+  const sum=document.getElementById('summary'); sum.classList.add('show');
+  sum.innerHTML='<b>Nice work.</b> Model answers are now revealed below in the Facilitator guide. '+
+    'Rounds 1–3 have right answers; Round 4 is judgement — compare your placements and pitches to the model. '+
+    '<a href="#instructor">Jump to model answers ↓</a>';
+  const btn=document.getElementById('btnSubmit'); btn.textContent='Submitted ✓'; btn.classList.add('done');
+  document.getElementById('instructor').classList.add('show');
+  document.getElementById('scoreboard').scrollIntoView({behavior:'smooth'});
+});
+
+/* ---------- Reveal ---------- */
+document.getElementById('btnReveal').addEventListener('click',()=>{
+  document.getElementById('instructor').classList.toggle('show');
+  document.getElementById('instructor').scrollIntoView({behavior:'smooth'});
+});
+</script>
+</body>
+</html>
